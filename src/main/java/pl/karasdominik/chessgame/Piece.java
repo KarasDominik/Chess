@@ -1,5 +1,7 @@
 package pl.karasdominik.chessgame;
 
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -56,8 +58,8 @@ public abstract class Piece extends ImageView {
             oldRow = GridPane.getRowIndex(this);
             oldCol = GridPane.getColumnIndex(this);
 
-//            grid.getChildren().remove(this);
-//            grid.add(this, oldCol, oldRow);
+            grid.getChildren().remove(this);
+            grid.add(this, oldCol, oldRow);
         });
 
         setOnMouseDragged((MouseEvent event) -> {
@@ -69,15 +71,22 @@ public abstract class Piece extends ImageView {
         });
 
         setOnMouseReleased((MouseEvent event) -> {
-//            GridPane grid = (GridPane) getParent();
+            GridPane grid = (GridPane) getParent();
 
-            int newRow = (int) (event.getY() / (grid.getHeight() * 8));
-            int newCol = (int) (event.getX() / (grid.getWidth() * 8));
-
+            int newRow = (int) (event.getSceneY() / (grid.getHeight() / 8));
+            int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
 
             if (canMoveTo(newRow, newCol)) {
+                ObservableList<Node> nodes = grid.getChildren();
+                for (Node node : nodes){
+                    if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
+                        grid.getChildren().remove(node);
+                        break;
+                    }
+                }
                 grid.getChildren().remove(this);
                 grid.add(this, newCol, newRow);
+
             } else {
                 grid.getChildren().remove(this);
                 grid.add(this, oldCol, oldRow);
