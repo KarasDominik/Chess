@@ -39,7 +39,8 @@ public abstract class Piece extends ImageView {
 
     private final int id;
     protected final boolean isWhite;
-    protected List<int[]> availableMoves;
+
+    protected List<String> availableMoves;
 
     private double mouseX, mouseY;
     private int oldRow, oldCol;
@@ -137,8 +138,9 @@ public abstract class Piece extends ImageView {
 
             int newRow = (int) (event.getSceneY() / (grid.getHeight() / 8));
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
-
-            if (canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
+            String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
+            boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
+            if (canMoveTo(oldRow, oldCol, newRow, newCol, chessboard) && rightTurn) {
                 ObservableList<Node> nodes = grid.getChildren();
                 for (Node node : nodes){
                     if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
@@ -148,9 +150,11 @@ public abstract class Piece extends ImageView {
                 }
                 grid.getChildren().remove(this);
                 grid.add(this, newCol, newRow);
+                String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
+                chessboard.moves.add(new Move(initialSquare, targetSquare));
                 chessboard.piecesOnBoard[newRow][newCol] = id;
                 chessboard.piecesOnBoard[oldRow][oldCol] = 0;
-//                chessboard.printChessboard();
+                System.out.println(chessboard.moves.size());
 
             } else {
                 grid.getChildren().remove(this);

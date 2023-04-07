@@ -11,10 +11,16 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+
+record Move(String initialSquare, String targetSquare){}
+
 public class Chessboard extends GridPane {
 
     private static final int SIZE = 8;
     public int[][] piecesOnBoard = new int[8][8];
+    protected List<Move> moves = new ArrayList<>();
 
     public Chessboard() {
         int rowCounter = 8;
@@ -79,7 +85,7 @@ public class Chessboard extends GridPane {
                 GridPane.setValignment(piece, VPos.CENTER);
             }
         }
-//        printChessboard();
+        printChessboard();
     }
     public void printChessboard() {
         for (int i = 0; i < 8; i++) {
@@ -88,5 +94,20 @@ public class Chessboard extends GridPane {
             }
             System.out.println();
         }
+    }
+    public static String convertSquareToString(int row, int column){
+        String firstLetter = switch(column){
+            case 0 -> "a";
+            case 1 -> "b";
+            case 2 -> "c";
+            case 3 -> "d";
+            case 4 -> "e";
+            case 5 -> "f";
+            case 6 -> "g";
+            default -> "h";
+        };
+        String secondLetter = String.valueOf(Math.abs(row - 8));
+
+        return firstLetter + secondLetter;
     }
 }
