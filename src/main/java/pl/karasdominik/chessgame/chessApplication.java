@@ -13,7 +13,7 @@ public class chessApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        chessboard = new Chessboard();
+        chessboard = new Chessboard(); 
         Scene scene = new Scene(chessboard, 750, 650);
         stage.setTitle("Chess");
         stage.setScene(scene);

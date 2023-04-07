@@ -7,7 +7,7 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public boolean canMoveTo(int row, int col) {
+    public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
         return true;
     }
 }
