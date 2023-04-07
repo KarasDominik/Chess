@@ -7,6 +7,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Piece extends ImageView {
 
     private static final String WHITE_PAWN_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\chessGame\\chessGame\\Images\\whitePawn.png";
@@ -35,13 +38,15 @@ public abstract class Piece extends ImageView {
     private static final int kingID = 6;
 
     private final int id;
-    private final boolean isWhite;
+    protected final boolean isWhite;
+    protected List<int[]> availableMoves;
 
     private double mouseX, mouseY;
     private int oldRow, oldCol;
 
     public Piece(boolean isWhite, String type) {
         this.isWhite = isWhite;
+        this.availableMoves = new ArrayList<>();
         // Assign an unique value and image for each piece
 
         String pieceImageFile;
@@ -145,7 +150,7 @@ public abstract class Piece extends ImageView {
                 grid.add(this, newCol, newRow);
                 chessboard.piecesOnBoard[newRow][newCol] = id;
                 chessboard.piecesOnBoard[oldRow][oldCol] = 0;
-                chessboard.printChessboard();
+//                chessboard.printChessboard();
 
             } else {
                 grid.getChildren().remove(this);
@@ -159,10 +164,6 @@ public abstract class Piece extends ImageView {
 
     public int getID() {
         return id;
-    }
-
-    public boolean isWhite(){
-        return isWhite;
     }
 
     public abstract boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard);

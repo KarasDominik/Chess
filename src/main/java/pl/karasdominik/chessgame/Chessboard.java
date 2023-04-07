@@ -1,10 +1,15 @@
 package pl.karasdominik.chessgame;
 
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 public class Chessboard extends GridPane {
 
@@ -12,14 +17,35 @@ public class Chessboard extends GridPane {
     public int[][] piecesOnBoard = new int[8][8];
 
     public Chessboard() {
+        int rowCounter = 8;
+        char colCounter = 'a';
+        Font font = Font.font("Arial", FontWeight.BOLD, 16);
+
         for (int row = 0; row < SIZE; row++) {
             for (int column = 0; column < SIZE; column++) {
+                String rowString = "";
+                String colString = "";
+                if (column == 0){
+                    rowString += rowCounter;
+                    rowCounter -= 1;
+                }
+                if (row == SIZE - 1){
+                    colString += colCounter;
+                    colCounter += 1;
+                }
                 Rectangle square = new Rectangle();
                 Color color = (row + column) % 2 == 0 ? Color.WHITE : Color.LIGHTGREEN;
                 square.setFill(color);
                 square.widthProperty().bind(widthProperty().divide(SIZE));
                 square.heightProperty().bind(heightProperty().divide(SIZE));
-                add(square, column, row);
+                Text rowText = new Text(rowString);
+                Text colText = new Text(colString);
+                rowText.setFont(font);
+                colText.setFont(font);
+                StackPane stackPane = new StackPane(square, rowText, colText);
+                StackPane.setMargin(rowText, new Insets(0, 75, 50, 0));
+                StackPane.setMargin(colText, new Insets(50, 0, 0, 85));
+                add(stackPane, column, row);
             }
         }
         addPieces();
@@ -53,7 +79,7 @@ public class Chessboard extends GridPane {
                 GridPane.setValignment(piece, VPos.CENTER);
             }
         }
-        printChessboard();
+//        printChessboard();
     }
     public void printChessboard() {
         for (int i = 0; i < 8; i++) {

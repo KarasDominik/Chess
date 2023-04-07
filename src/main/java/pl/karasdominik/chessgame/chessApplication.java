@@ -14,7 +14,7 @@ public class chessApplication extends Application {
     public void start(Stage stage) throws IOException {
 
         chessboard = new Chessboard(); 
-        Scene scene = new Scene(chessboard, 750, 650);
+        Scene scene = new Scene(chessboard, 850, 700);
         stage.setTitle("Chess");
         stage.setScene(scene);
         stage.show();
