@@ -9,6 +9,7 @@ import javafx.scene.shape.Rectangle;
 public class Chessboard extends GridPane {
 
     private static final int SIZE = 8;
+    public int[][] piecesOnBoard = new int[8][8];
 
     public Chessboard() {
         for (int row = 0; row < SIZE; row++) {
@@ -34,46 +35,32 @@ public class Chessboard extends GridPane {
                 isWhite = true;
             }
             for (int column = 0; column < SIZE; column++) {
+                Piece piece;
                 if (row == 0 || row == 7) {
                     switch (column) {
-                        case 0, 7 -> {
-                            Rook rook = new Rook(isWhite);
-                            add(rook, column, row);
-                            GridPane.setHalignment(rook, HPos.CENTER);
-                            GridPane.setValignment(rook, VPos.CENTER);
-                        }
-                        case 1, 6 -> {
-                            Knight knight = new Knight(isWhite);
-                            add(knight, column, row);
-                            GridPane.setHalignment(knight, HPos.CENTER);
-                            GridPane.setValignment(knight, VPos.CENTER);
-                        }
-                        case 2, 5 -> {
-                            Bishop bishop = new Bishop(isWhite);
-                            add(bishop, column, row);
-                            GridPane.setHalignment(bishop, HPos.CENTER);
-                            GridPane.setValignment(bishop, VPos.CENTER);
-                        }
-                        case 3 -> {
-                            Queen queen = new Queen(isWhite);
-                            add(queen, column, row);
-                            GridPane.setHalignment(queen, HPos.CENTER);
-                            GridPane.setValignment(queen, VPos.CENTER);
-                        }
-                        default -> {
-                            King king = new King(isWhite);
-                            add(king, column, row);
-                            GridPane.setHalignment(king, HPos.CENTER);
-                            GridPane.setValignment(king, VPos.CENTER);
-                        }
+                        case 0, 7 -> piece = new Rook(isWhite);
+                        case 1, 6 -> piece = new Knight(isWhite);
+                        case 2, 5 -> piece = new Bishop(isWhite);
+                        case 3 -> piece = new Queen(isWhite);
+                        default -> piece = new King(isWhite);
                     }
                 } else {
-                    Pawn pawn = new Pawn(isWhite);
-                    add(pawn, column, row);
-                    GridPane.setHalignment(pawn, HPos.CENTER);
-                    GridPane.setValignment(pawn, VPos.CENTER);
+                    piece = new Pawn(isWhite);
                 }
+                add(piece, column, row);
+                piecesOnBoard[row][column] = piece.getID();
+                GridPane.setHalignment(piece, HPos.CENTER);
+                GridPane.setValignment(piece, VPos.CENTER);
             }
+        }
+        printChessboard();
+    }
+    public void printChessboard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                System.out.printf("%5d", piecesOnBoard[i][j]);
+            }
+            System.out.println();
         }
     }
 }

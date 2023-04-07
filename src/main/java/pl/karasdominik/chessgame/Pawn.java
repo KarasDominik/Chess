@@ -10,4 +10,6 @@ public class Pawn extends Piece {
     public boolean canMoveTo(int row, int col) {
         return true;
     }
+
+
 }
