@@ -41,7 +41,7 @@ public abstract class Piece extends ImageView {
     private static final int queenID = 5;
     private static final int kingID = 6;
 
-    private final int id;
+//    private final int id;
     protected final boolean isWhite;
     protected final Color color;
     protected String piecePosition;
@@ -63,55 +63,55 @@ public abstract class Piece extends ImageView {
             case "pawn" -> {
                 if (isWhite){
                     pieceImageFile = WHITE_PAWN_IMAGE_FILE;
-                    id = pawnID + 8;
+//                    id = pawnID + 8;
                 } else {
                     pieceImageFile = BLACK_PAWN_IMAGE_FILE;
-                    id = pawnID + 16;
+//                    id = pawnID + 16;
                 }
             }
             case "rook" -> {
                 if (isWhite) {
                     pieceImageFile = WHITE_ROOK_IMAGE_FILE;
-                    id = rookID + 8;
+//                    id = rookID + 8;
                 } else {
                     pieceImageFile = BLACK_ROOK_IMAGE_FILE;
-                    id = rookID + 16;
+//                    id = rookID + 16;
                 }
             }
             case "bishop" -> {
                 if (isWhite) {
                     pieceImageFile = WHITE_BISHOP_IMAGE_FILE;
-                    id = bishopID + 8;
+//                    id = bishopID + 8;
                 } else {
                     pieceImageFile = BLACK_BISHOP_IMAGE_FILE;
-                    id = bishopID + 16;
+//                    id = bishopID + 16;
                 }
             }
             case "knight" -> {
                 if (isWhite) {
                     pieceImageFile = WHITE_KNIGHT_IMAGE_FILE;
-                    id = knightID + 8;
+//                    id = knightID + 8;
                 } else {
                     pieceImageFile = BLACK_KNIGHT_IMAGE_FILE;
-                    id = knightID + 16;
+//                    id = knightID + 16;
                 }
             }
             case "queen" -> {
                 if (isWhite) {
                     pieceImageFile = WHITE_QUEEN_IMAGE_FILE;
-                    id = queenID + 8;
+//                    id = queenID + 8;
                 } else {
                     pieceImageFile = BLACK_QUEEN_IMAGE_FILE;
-                    id = queenID + 16;
+//                    id = queenID + 16;
                 }
             }
             default -> {
                 if (isWhite) {
                     pieceImageFile = WHITE_KING_IMAGE_FILE;
-                    id = kingID + 8;
+//                    id = kingID + 8;
                 } else {
                     pieceImageFile = BLACK_KING_IMAGE_FILE;
-                    id = kingID + 16;
+//                    id = kingID + 16;
                 }
             }
         }
@@ -180,6 +180,7 @@ public abstract class Piece extends ImageView {
                         Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
                         grid.getChildren().remove(pawnToRemove);
                         chessboard.piecesLeft.remove(pawnToRemove);
+                        chessboard.piecesOnBoard[oldRow][newCol] = null;
                 }
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
                     Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
@@ -211,9 +212,6 @@ public abstract class Piece extends ImageView {
 
     public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
 
-    public int getID() {
-        return id;
-    }
     public static void updatePossibleMovesForEachPiece(Chessboard chessboard){
         for (Piece piece : chessboard.piecesLeft){
             int pieceRow = Chessboard.convertSquareToInts(piece.piecePosition)[0];
