@@ -2,26 +2,21 @@ package pl.karasdominik.chessgame;
 
 public class Pawn extends Piece {
 
-    private boolean isFirstMove;
+    protected boolean isFirstMove;
 
     public Pawn(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
         isFirstMove = true;
     }
 
-    @Override
+        @Override
     public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
-        getPossibleMoves(oldRow, oldCol, chessboard);
-
-        String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
-        for (String move : availableMoves) {
-            if (move.equals(targetSquare)) {
+            if (super.canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
                 isFirstMove = false;
                 return true;
             }
+            return false;
         }
-        return false;
-    }
 
     public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
 

@@ -34,14 +34,6 @@ public abstract class Piece extends ImageView {
     private static final String WHITE_BISHOP_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\chessGame\\chessGame\\Images\\whiteBishop.png";
     private static final String BLACK_BISHOP_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\chessGame\\chessGame\\Images\\blackBishop.png";
 
-    private static final int pawnID = 1;
-    private static final int knightID = 2;
-    private static final int bishopID = 3;
-    private static final int rookID = 4;
-    private static final int queenID = 5;
-    private static final int kingID = 6;
-
-//    private final int id;
     protected final boolean isWhite;
     protected final Color color;
     protected String piecePosition;
@@ -56,65 +48,16 @@ public abstract class Piece extends ImageView {
         this.color = isWhite ? Color.WHITE : Color.BLACK;
         this.availableMoves = new ArrayList<>();
         piecePosition = Chessboard.convertSquareToString(row, col);
-        // Assign an unique value and image for each piece
 
-        String pieceImageFile;
-        switch (type){
-            case "pawn" -> {
-                if (isWhite){
-                    pieceImageFile = WHITE_PAWN_IMAGE_FILE;
-//                    id = pawnID + 8;
-                } else {
-                    pieceImageFile = BLACK_PAWN_IMAGE_FILE;
-//                    id = pawnID + 16;
-                }
-            }
-            case "rook" -> {
-                if (isWhite) {
-                    pieceImageFile = WHITE_ROOK_IMAGE_FILE;
-//                    id = rookID + 8;
-                } else {
-                    pieceImageFile = BLACK_ROOK_IMAGE_FILE;
-//                    id = rookID + 16;
-                }
-            }
-            case "bishop" -> {
-                if (isWhite) {
-                    pieceImageFile = WHITE_BISHOP_IMAGE_FILE;
-//                    id = bishopID + 8;
-                } else {
-                    pieceImageFile = BLACK_BISHOP_IMAGE_FILE;
-//                    id = bishopID + 16;
-                }
-            }
-            case "knight" -> {
-                if (isWhite) {
-                    pieceImageFile = WHITE_KNIGHT_IMAGE_FILE;
-//                    id = knightID + 8;
-                } else {
-                    pieceImageFile = BLACK_KNIGHT_IMAGE_FILE;
-//                    id = knightID + 16;
-                }
-            }
-            case "queen" -> {
-                if (isWhite) {
-                    pieceImageFile = WHITE_QUEEN_IMAGE_FILE;
-//                    id = queenID + 8;
-                } else {
-                    pieceImageFile = BLACK_QUEEN_IMAGE_FILE;
-//                    id = queenID + 16;
-                }
-            }
-            default -> {
-                if (isWhite) {
-                    pieceImageFile = WHITE_KING_IMAGE_FILE;
-//                    id = kingID + 8;
-                } else {
-                    pieceImageFile = BLACK_KING_IMAGE_FILE;
-//                    id = kingID + 16;
-                }
-            }
-        }
+        // Assign an unique value and image for each piece
+        String pieceImageFile = switch (type){
+            case "pawn" -> isWhite ? WHITE_PAWN_IMAGE_FILE : BLACK_PAWN_IMAGE_FILE;
+            case "rook" -> isWhite ? WHITE_ROOK_IMAGE_FILE : BLACK_ROOK_IMAGE_FILE;
+            case "bishop" -> isWhite ? WHITE_BISHOP_IMAGE_FILE : BLACK_BISHOP_IMAGE_FILE;
+            case "knight" -> isWhite ? WHITE_KNIGHT_IMAGE_FILE : BLACK_KNIGHT_IMAGE_FILE;
+            case "queen" -> isWhite ? WHITE_QUEEN_IMAGE_FILE : BLACK_QUEEN_IMAGE_FILE;
+            default -> isWhite ? WHITE_KING_IMAGE_FILE : BLACK_KING_IMAGE_FILE;
+        };
         Image pieceImage = new Image(pieceImageFile);
         setImage(pieceImage);
 
@@ -208,7 +151,15 @@ public abstract class Piece extends ImageView {
         });
     }
 
-    public abstract boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard);
+    public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
+        getPossibleMoves(oldRow, oldCol, chessboard);
+
+        String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
+        for (String move : availableMoves) {
+            if (move.equals(targetSquare)) return true;
+        }
+        return false;
+    }
 
     public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
 
