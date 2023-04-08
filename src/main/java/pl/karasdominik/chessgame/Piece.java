@@ -8,6 +8,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,14 +113,27 @@ public abstract class Piece extends ImageView {
         }
         Image pieceImage = new Image(pieceImageFile);
         setImage(pieceImage);
-
         // Enable mouse dragging for each piece
 
         setOnMousePressed((MouseEvent event) -> {
+            Chessboard chessboard = chessApplication.getChessboard();
+            GridPane grid = (GridPane) getParent();
+            // Remove any existing circles from the chessboard
+            chessboard.removeCircles(grid);
+            System.out.println(availableMoves.size());
+            for (String square : availableMoves){
+                Circle circle = new Circle(30, Color.LIGHTGRAY);
+                int row = Chessboard.convertSquareToInts(square)[0];
+                int col = Chessboard.convertSquareToInts(square)[1];
+                grid.add(circle, col, row);
+                GridPane.setHalignment(circle, HPos.CENTER);
+                GridPane.setValignment(circle, VPos.CENTER);
+                chessboard.circles.add(circle);
+            }
+
             mouseX = event.getSceneX();
             mouseY = event.getSceneY();
 
-            GridPane grid = (GridPane) getParent();
             oldRow = GridPane.getRowIndex(this);
             oldCol = GridPane.getColumnIndex(this);
 
@@ -142,7 +157,7 @@ public abstract class Piece extends ImageView {
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
             String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
             boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
-            if (canMoveTo(oldRow, oldCol, newRow, newCol, chessboard) && rightTurn) {
+            if (rightTurn && canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
                 ObservableList<Node> nodes = grid.getChildren();
                 for (Node node : nodes){
                     if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
@@ -151,7 +166,7 @@ public abstract class Piece extends ImageView {
                     }
                 }
                 grid.getChildren().remove(this);
-                if (this instanceof Pawn && isWhite && newRow == 0){
+                if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
                     Piece promotedPawn = new Queen(isWhite);
                     grid.add(promotedPawn, newCol, newRow);
                     GridPane.setHalignment(promotedPawn, HPos.CENTER);
@@ -163,6 +178,8 @@ public abstract class Piece extends ImageView {
                 chessboard.moves.add(new Move(initialSquare, targetSquare));
                 chessboard.piecesOnBoard[newRow][newCol] = id;
                 chessboard.piecesOnBoard[oldRow][oldCol] = 0;
+                chessboard.removeCircles(grid);
+                System.out.println(chessboard.moves.size());
 
             } else {
                 grid.getChildren().remove(this);
@@ -174,9 +191,9 @@ public abstract class Piece extends ImageView {
         });
     }
 
+    public abstract boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard);
+
     public int getID() {
         return id;
     }
-
-    public abstract boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard);
 }

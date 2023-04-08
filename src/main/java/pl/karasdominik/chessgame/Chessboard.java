@@ -6,6 +6,7 @@ import javafx.geometry.VPos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -21,6 +22,7 @@ public class Chessboard extends GridPane {
     private static final int SIZE = 8;
     public int[][] piecesOnBoard = new int[8][8];
     protected List<Move> moves = new ArrayList<>();
+    protected List<Circle> circles = new ArrayList<>();
 
     public Chessboard() {
         int rowCounter = 8;
@@ -109,5 +111,25 @@ public class Chessboard extends GridPane {
         String secondLetter = String.valueOf(Math.abs(row - 8));
 
         return firstLetter + secondLetter;
+    }
+    public static int[] convertSquareToInts(String square){
+        int row = 8 - (square.charAt(1) - '0');
+        int col = switch (square.charAt(0)){
+            case 'a' -> 0;
+            case 'b' -> 1;
+            case 'c' -> 2;
+            case 'd' -> 3;
+            case 'e' -> 4;
+            case 'f' -> 5;
+            case 'g' -> 6;
+            default -> 7;
+        };
+        return new int[]{row, col};
+    }
+    public void removeCircles(GridPane grid) {
+        for (Circle circle : circles){
+            grid.getChildren().remove(circle);
+        }
+        circles.clear();
     }
 }

@@ -25,6 +25,8 @@ public class Pawn extends Piece {
 
     public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
 
+        availableMoves.clear();
+
         // If it's pawn's first move
         if (isFirstMove) {
             if (isWhite) {
@@ -38,7 +40,6 @@ public class Pawn extends Piece {
         }
 
         int availableMoveForward = isWhite ? -1 : 1;
-        availableMoves.clear();
 
         // Check if it can move forward
         if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == 0) {
