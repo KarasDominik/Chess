@@ -9,14 +9,14 @@ public class Pawn extends Piece {
         isFirstMove = true;
     }
 
-        @Override
+    @Override
     public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
-            if (super.canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
-                isFirstMove = false;
-                return true;
-            }
-            return false;
+        if (super.canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
+            isFirstMove = false;
+            return true;
         }
+        return false;
+    }
 
     public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
 
@@ -39,34 +39,30 @@ public class Pawn extends Piece {
                     }
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException ignored) {}
 
-        // Check if it can move upper left
-        try {
+
+            // Check if it can move upper left
             Piece leftTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol - 1];
             if ((leftTargetSquare != null) && (leftTargetSquare.color != color)) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol - 1));
             }
-        } catch (ArrayIndexOutOfBoundsException ignored) {}
 
-        // Check if it can move upper right
-        try {
+            // Check if it can move upper right
             Piece rightTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol + 1];
             if (rightTargetSquare != null && rightTargetSquare.color != color) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
             }
-        } catch (ArrayIndexOutOfBoundsException ignored) {}
-        // Check if it can capture en passant
-        int initialRow = isWhite ? 3 : 4;
-        if (Chessboard.convertSquareToInts(piecePosition)[0] == initialRow){
-            try{
-                if (chessboard.piecesOnBoard[currentRow][currentCol - 1] instanceof Pawn || chessboard.piecesOnBoard[currentRow][currentCol + 1] instanceof Pawn){
+            // Check if it can capture en passant
+            int initialRow = isWhite ? 3 : 4;
+            if (Chessboard.convertSquareToInts(piecePosition)[0] == initialRow) {
+                if (chessboard.piecesOnBoard[currentRow][currentCol - 1] instanceof Pawn || chessboard.piecesOnBoard[currentRow][currentCol + 1] instanceof Pawn) {
                     Move lastMove = chessboard.moves.get(chessboard.moves.size() - 1);
-                    if (Math.abs(Chessboard.convertSquareToInts(lastMove.targetSquare())[0] - Chessboard.convertSquareToInts(lastMove.initialSquare())[0]) == 2){
+                    if (Math.abs(Chessboard.convertSquareToInts(lastMove.targetSquare())[0] - Chessboard.convertSquareToInts(lastMove.initialSquare())[0]) == 2) {
                         availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, Chessboard.convertSquareToInts(lastMove.targetSquare())[1]));
                     }
                 }
-            } catch (ArrayIndexOutOfBoundsException ignored){}
+            }
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
     }
 }
