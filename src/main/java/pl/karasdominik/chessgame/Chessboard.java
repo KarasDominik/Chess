@@ -20,7 +20,7 @@ record Move(String initialSquare, String targetSquare){}
 public class Chessboard extends GridPane {
 
     private static final int SIZE = 8;
-    public int[][] piecesOnBoard = new int[8][8];
+    public Piece[][] piecesOnBoard = new Piece[8][8];
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
     protected List<Piece> piecesLeft = new ArrayList<>();
@@ -85,21 +85,21 @@ public class Chessboard extends GridPane {
                 add(piece, column, row);
                 piece.getPossibleMoves(row, column, this);
                 piecesLeft.add(piece);
-                piecesOnBoard[row][column] = piece.getID();
+                piecesOnBoard[row][column] = piece;
                 GridPane.setHalignment(piece, HPos.CENTER);
                 GridPane.setValignment(piece, VPos.CENTER);
             }
         }
-        printChessboard();
+//        printChessboard();
     }
-    public void printChessboard() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                System.out.printf("%5d", piecesOnBoard[i][j]);
-            }
-            System.out.println();
-        }
-    }
+//    public void printChessboard() {
+//        for (int i = 0; i < 8; i++) {
+//            for (int j = 0; j < 8; j++) {
+//                System.out.printf("%5d", piecesOnBoard[i][j]);
+//            }
+//            System.out.println();
+//        }
+//    }
     public static String convertSquareToString(int row, int column){
         String firstLetter = switch(column){
             case 0 -> "a";

@@ -43,7 +43,8 @@ public abstract class Piece extends ImageView {
 
     private final int id;
     protected final boolean isWhite;
-    private String piecePosition;
+    protected final Color color;
+    protected String piecePosition;
 
     protected List<String> availableMoves;
 
@@ -52,6 +53,7 @@ public abstract class Piece extends ImageView {
 
     public Piece(boolean isWhite, String type, int row, int col) {
         this.isWhite = isWhite;
+        this.color = isWhite ? Color.WHITE : Color.BLACK;
         this.availableMoves = new ArrayList<>();
         piecePosition = Chessboard.convertSquareToString(row, col);
         // Assign an unique value and image for each piece
@@ -172,6 +174,13 @@ public abstract class Piece extends ImageView {
                     }
                 }
                 grid.getChildren().remove(this);
+                // Check if it was a passant capture
+                if (this instanceof Pawn && chessboard.piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
+                {
+                        Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
+                        grid.getChildren().remove(pawnToRemove);
+                        chessboard.piecesLeft.remove(pawnToRemove);
+                }
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
                     Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
                     grid.add(promotedPawn, newCol, newRow);
@@ -182,12 +191,11 @@ public abstract class Piece extends ImageView {
                 }
                 String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
                 chessboard.moves.add(new Move(initialSquare, targetSquare));
-                chessboard.piecesOnBoard[newRow][newCol] = id;
-                chessboard.piecesOnBoard[oldRow][oldCol] = 0;
+                chessboard.piecesOnBoard[newRow][newCol] = this;
+                chessboard.piecesOnBoard[oldRow][oldCol] = null;
                 piecePosition = Chessboard.convertSquareToString(newRow, newCol);
                 chessboard.removeCircles(grid);
                 updatePossibleMovesForEachPiece(chessboard);
-                chessboard.printChessboard();
 
             } else {
                 grid.getChildren().remove(this);

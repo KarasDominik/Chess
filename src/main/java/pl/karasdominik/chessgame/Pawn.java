@@ -4,7 +4,7 @@ public class Pawn extends Piece {
 
     private boolean isFirstMove;
 
-    public Pawn(boolean isWhite, String type, int row, int col){
+    public Pawn(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
         isFirstMove = true;
     }
@@ -31,42 +31,47 @@ public class Pawn extends Piece {
 
         // Check if it can move forward
         try {
-            if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == 0) {
+            if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == null) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol));
                 // If it can move 1 square forward, check if it can move 2 squares forward as first move
                 if (isFirstMove) {
-                    if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == 0) {
+                    if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == null) {
                         availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
                     } else {
-                        if (!isWhite && chessboard.piecesOnBoard[currentRow + 2][currentCol] == 0) {
+                        if (!isWhite && chessboard.piecesOnBoard[currentRow + 2][currentCol] == null) {
                             availableMoves.add(Chessboard.convertSquareToString(3, currentCol));
                         }
                     }
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException ignored){}
+        } catch (ArrayIndexOutOfBoundsException ignored) {}
 
         // Check if it can move upper left
         try {
-            int leftTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol - 1];
-            if ((leftTargetSquare != 0) &&
-                    (leftTargetSquare > 15 && getID() < 15 || leftTargetSquare < 15 && getID() > 15)) {
+            Piece leftTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol - 1];
+            if ((leftTargetSquare != null) && (leftTargetSquare.color != color)) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol - 1));
             }
-        } catch (ArrayIndexOutOfBoundsException ignored){}
+        } catch (ArrayIndexOutOfBoundsException ignored) {}
 
         // Check if it can move upper right
         try {
-            int rightTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol + 1];
-            if ((rightTargetSquare != 0) &&
-                    (rightTargetSquare > 15 && getID() < 15 || rightTargetSquare < 15 && getID() > 15)) {
+            Piece rightTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol + 1];
+            if (rightTargetSquare != null && rightTargetSquare.color != color) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
             }
-        } catch (ArrayIndexOutOfBoundsException ignored){}
-        // Check if it can capture passant
-        int enemyPawnID = isWhite ? 17 : 9;
-        if (chessboard.piecesOnBoard[currentRow][currentCol - 1] == enemyPawnID || chessboard.piecesOnBoard[currentRow][currentCol + 1] == enemyPawnID){
-            
+        } catch (ArrayIndexOutOfBoundsException ignored) {}
+        // Check if it can capture en passant
+        int initialRow = isWhite ? 3 : 4;
+        if (Chessboard.convertSquareToInts(piecePosition)[0] == initialRow){
+            try{
+                if (chessboard.piecesOnBoard[currentRow][currentCol - 1] instanceof Pawn || chessboard.piecesOnBoard[currentRow][currentCol + 1] instanceof Pawn){
+                    Move lastMove = chessboard.moves.get(chessboard.moves.size() - 1);
+                    if (Math.abs(Chessboard.convertSquareToInts(lastMove.targetSquare())[0] - Chessboard.convertSquareToInts(lastMove.initialSquare())[0]) == 2){
+                        availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, Chessboard.convertSquareToInts(lastMove.targetSquare())[1]));
+                    }
+                }
+            } catch (ArrayIndexOutOfBoundsException ignored){}
         }
     }
 }
