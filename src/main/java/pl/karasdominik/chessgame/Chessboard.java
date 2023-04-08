@@ -23,6 +23,7 @@ public class Chessboard extends GridPane {
     public int[][] piecesOnBoard = new int[8][8];
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
+    protected List<Piece> piecesLeft = new ArrayList<>();
 
     public Chessboard() {
         int rowCounter = 8;
@@ -72,16 +73,18 @@ public class Chessboard extends GridPane {
                 Piece piece;
                 if (row == 0 || row == 7) {
                     switch (column) {
-                        case 0, 7 -> piece = new Rook(isWhite);
-                        case 1, 6 -> piece = new Knight(isWhite);
-                        case 2, 5 -> piece = new Bishop(isWhite);
-                        case 3 -> piece = new Queen(isWhite);
-                        default -> piece = new King(isWhite);
+                        case 0, 7 -> piece = new Rook(isWhite, "rook", row, column);
+                        case 1, 6 -> piece = new Knight(isWhite, "knight", row, column);
+                        case 2, 5 -> piece = new Bishop(isWhite, "bishop", row, column);
+                        case 3 -> piece = new Queen(isWhite, "queen", row, column);
+                        default -> piece = new King(isWhite, "king", row, column);
                     }
                 } else {
-                    piece = new Pawn(isWhite);
+                    piece = new Pawn(isWhite, "pawn", row, column);
                 }
                 add(piece, column, row);
+                piece.getPossibleMoves(row, column, this);
+                piecesLeft.add(piece);
                 piecesOnBoard[row][column] = piece.getID();
                 GridPane.setHalignment(piece, HPos.CENTER);
                 GridPane.setValignment(piece, VPos.CENTER);

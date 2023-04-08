@@ -43,15 +43,17 @@ public abstract class Piece extends ImageView {
 
     private final int id;
     protected final boolean isWhite;
+    private String piecePosition;
 
     protected List<String> availableMoves;
 
     private double mouseX, mouseY;
     private int oldRow, oldCol;
 
-    public Piece(boolean isWhite, String type) {
+    public Piece(boolean isWhite, String type, int row, int col) {
         this.isWhite = isWhite;
         this.availableMoves = new ArrayList<>();
+        piecePosition = Chessboard.convertSquareToString(row, col);
         // Assign an unique value and image for each piece
 
         String pieceImageFile;
@@ -113,19 +115,22 @@ public abstract class Piece extends ImageView {
         }
         Image pieceImage = new Image(pieceImageFile);
         setImage(pieceImage);
+
         // Enable mouse dragging for each piece
 
         setOnMousePressed((MouseEvent event) -> {
             Chessboard chessboard = chessApplication.getChessboard();
             GridPane grid = (GridPane) getParent();
+
             // Remove any existing circles from the chessboard
             chessboard.removeCircles(grid);
-            System.out.println(availableMoves.size());
+
+            // Display possible moves
             for (String square : availableMoves){
                 Circle circle = new Circle(30, Color.LIGHTGRAY);
-                int row = Chessboard.convertSquareToInts(square)[0];
-                int col = Chessboard.convertSquareToInts(square)[1];
-                grid.add(circle, col, row);
+                int circleRow = Chessboard.convertSquareToInts(square)[0];
+                int circleCol = Chessboard.convertSquareToInts(square)[1];
+                grid.add(circle, circleCol, circleRow);
                 GridPane.setHalignment(circle, HPos.CENTER);
                 GridPane.setValignment(circle, VPos.CENTER);
                 chessboard.circles.add(circle);
@@ -162,12 +167,13 @@ public abstract class Piece extends ImageView {
                 for (Node node : nodes){
                     if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
                         grid.getChildren().remove(node);
+                        chessboard.piecesLeft.remove(node);
                         break;
                     }
                 }
                 grid.getChildren().remove(this);
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
-                    Piece promotedPawn = new Queen(isWhite);
+                    Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
                     grid.add(promotedPawn, newCol, newRow);
                     GridPane.setHalignment(promotedPawn, HPos.CENTER);
                     GridPane.setValignment(promotedPawn, VPos.CENTER);
@@ -178,8 +184,10 @@ public abstract class Piece extends ImageView {
                 chessboard.moves.add(new Move(initialSquare, targetSquare));
                 chessboard.piecesOnBoard[newRow][newCol] = id;
                 chessboard.piecesOnBoard[oldRow][oldCol] = 0;
+                piecePosition = Chessboard.convertSquareToString(newRow, newCol);
                 chessboard.removeCircles(grid);
-                System.out.println(chessboard.moves.size());
+                updatePossibleMovesForEachPiece(chessboard);
+                chessboard.printChessboard();
 
             } else {
                 grid.getChildren().remove(this);
@@ -193,7 +201,16 @@ public abstract class Piece extends ImageView {
 
     public abstract boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard);
 
+    public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
+
     public int getID() {
         return id;
+    }
+    public static void updatePossibleMovesForEachPiece(Chessboard chessboard){
+        for (Piece piece : chessboard.piecesLeft){
+            int pieceRow = Chessboard.convertSquareToInts(piece.piecePosition)[0];
+            int pieceColumn = Chessboard.convertSquareToInts(piece.piecePosition)[1];
+            piece.getPossibleMoves(pieceRow, pieceColumn, chessboard);
+        }
     }
 }

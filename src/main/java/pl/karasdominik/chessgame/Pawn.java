@@ -4,8 +4,8 @@ public class Pawn extends Piece {
 
     private boolean isFirstMove;
 
-    public Pawn(boolean isWhite) {
-        super(isWhite, "pawn");
+    public Pawn(boolean isWhite, String type, int row, int col){
+        super(isWhite, type, row, col);
         isFirstMove = true;
     }
 
@@ -27,24 +27,34 @@ public class Pawn extends Piece {
 
         availableMoves.clear();
 
-        // If it's pawn's first move
-        if (isFirstMove) {
-            if (isWhite) {
-                availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
-                availableMoves.add(Chessboard.convertSquareToString(5, currentCol));
-            } else {
-                availableMoves.add(Chessboard.convertSquareToString(2, currentCol));
-                availableMoves.add(Chessboard.convertSquareToString(3, currentCol));
-            }
-            return;
-        }
+//        // If it's pawn's first move
+//        if (isFirstMove) {
+//            if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == 0) {
+//                availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
+//            } else {
+//                if (!isWhite && chessboard.piecesOnBoard[currentRow + 2][currentCol] == 0) {
+//                    availableMoves.add(Chessboard.convertSquareToString(3, currentCol));
+//                }
+//            }
+//        }
 
         int availableMoveForward = isWhite ? -1 : 1;
 
         // Check if it can move forward
-        if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == 0) {
-            availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol));
-        }
+        try {
+            if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == 0) {
+                availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol));
+                if (isFirstMove) {
+                    if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == 0) {
+                        availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
+                    } else {
+                        if (!isWhite && chessboard.piecesOnBoard[currentRow + 2][currentCol] == 0) {
+                            availableMoves.add(Chessboard.convertSquareToString(3, currentCol));
+                        }
+                    }
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException ignored){}
 
         // Check if it can move upper left
         try {
