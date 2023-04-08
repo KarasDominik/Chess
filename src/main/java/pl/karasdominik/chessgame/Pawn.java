@@ -27,23 +27,13 @@ public class Pawn extends Piece {
 
         availableMoves.clear();
 
-//        // If it's pawn's first move
-//        if (isFirstMove) {
-//            if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == 0) {
-//                availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
-//            } else {
-//                if (!isWhite && chessboard.piecesOnBoard[currentRow + 2][currentCol] == 0) {
-//                    availableMoves.add(Chessboard.convertSquareToString(3, currentCol));
-//                }
-//            }
-//        }
-
         int availableMoveForward = isWhite ? -1 : 1;
 
         // Check if it can move forward
         try {
             if (chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol] == 0) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol));
+                // If it can move 1 square forward, check if it can move 2 squares forward as first move
                 if (isFirstMove) {
                     if (isWhite && chessboard.piecesOnBoard[currentRow - 2][currentCol] == 0) {
                         availableMoves.add(Chessboard.convertSquareToString(4, currentCol));
@@ -73,5 +63,10 @@ public class Pawn extends Piece {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
+        // Check if it can capture passant
+        int enemyPawnID = isWhite ? 17 : 9;
+        if (chessboard.piecesOnBoard[currentRow][currentCol - 1] == enemyPawnID || chessboard.piecesOnBoard[currentRow][currentCol + 1] == enemyPawnID){
+            
+        }
     }
 }
