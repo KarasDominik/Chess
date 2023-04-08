@@ -39,19 +39,24 @@ public class Pawn extends Piece {
                     }
                 }
             }
-
-
+        } catch (ArrayIndexOutOfBoundsException ignored){}
+        try {
             // Check if it can move upper left
             Piece leftTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol - 1];
             if ((leftTargetSquare != null) && (leftTargetSquare.color != color)) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol - 1));
             }
+        } catch (ArrayIndexOutOfBoundsException ignored){}
 
+        try {
             // Check if it can move upper right
             Piece rightTargetSquare = chessboard.piecesOnBoard[currentRow + availableMoveForward][currentCol + 1];
             if (rightTargetSquare != null && rightTargetSquare.color != color) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
             }
+        } catch (ArrayIndexOutOfBoundsException ignored){}
+
+        try {
             // Check if it can capture en passant
             int initialRow = isWhite ? 3 : 4;
             if (Chessboard.convertSquareToInts(piecePosition)[0] == initialRow) {
@@ -62,7 +67,6 @@ public class Pawn extends Piece {
                     }
                 }
             }
-        } catch (ArrayIndexOutOfBoundsException ignored) {
-        }
+        } catch (ArrayIndexOutOfBoundsException ignored){}
     }
 }

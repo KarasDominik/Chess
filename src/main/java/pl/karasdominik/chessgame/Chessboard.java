@@ -19,7 +19,7 @@ record Move(String initialSquare, String targetSquare){}
 
 public class Chessboard extends GridPane {
 
-    private static final int SIZE = 8;
+    protected static final int SIZE = 8;
     public Piece[][] piecesOnBoard = new Piece[8][8];
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
