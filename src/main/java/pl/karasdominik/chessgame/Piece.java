@@ -1,6 +1,8 @@
 package pl.karasdominik.chessgame;
 
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -149,12 +151,18 @@ public abstract class Piece extends ImageView {
                     }
                 }
                 grid.getChildren().remove(this);
-                grid.add(this, newCol, newRow);
+                if (this instanceof Pawn && isWhite && newRow == 0){
+                    Piece promotedPawn = new Queen(isWhite);
+                    grid.add(promotedPawn, newCol, newRow);
+                    GridPane.setHalignment(promotedPawn, HPos.CENTER);
+                    GridPane.setValignment(promotedPawn, VPos.CENTER);
+                } else {
+                    grid.add(this, newCol, newRow);
+                }
                 String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
                 chessboard.moves.add(new Move(initialSquare, targetSquare));
                 chessboard.piecesOnBoard[newRow][newCol] = id;
                 chessboard.piecesOnBoard[oldRow][oldCol] = 0;
-                System.out.println(chessboard.moves.size());
 
             } else {
                 grid.getChildren().remove(this);
