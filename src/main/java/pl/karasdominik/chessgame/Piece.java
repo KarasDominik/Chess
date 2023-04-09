@@ -37,6 +37,7 @@ public abstract class Piece extends ImageView {
     protected final boolean isWhite;
     protected final Color color;
     protected String piecePosition;
+    protected boolean isFirstMove;
 
     protected List<String> availableMoves;
 
@@ -48,6 +49,7 @@ public abstract class Piece extends ImageView {
         this.color = isWhite ? Color.WHITE : Color.BLACK;
         this.availableMoves = new ArrayList<>();
         piecePosition = Chessboard.convertSquareToString(row, col);
+        isFirstMove = true;
 
         // Assign an unique value and image for each piece
         String pieceImageFile = switch (type){
@@ -71,15 +73,17 @@ public abstract class Piece extends ImageView {
             chessboard.removeCircles(grid);
 
             // Display possible moves
-            for (String square : availableMoves){
-                Circle circle = new Circle(30);
-                circle.setFill(Color.rgb(255, 255, 225));
-                int circleRow = Chessboard.convertSquareToInts(square)[0];
-                int circleCol = Chessboard.convertSquareToInts(square)[1];
-                grid.add(circle, circleCol, circleRow);
-                GridPane.setHalignment(circle, HPos.CENTER);
-                GridPane.setValignment(circle, VPos.CENTER);
-                chessboard.circles.add(circle);
+            if (chessboard.moves.size() % 2 == 0 && this.isWhite || chessboard.moves.size() % 2 != 0 && !this.isWhite) {
+                for (String square : availableMoves) {
+                    Circle circle = new Circle(30);
+                    circle.setFill(Color.rgb(255, 255, 225));
+                    int circleRow = Chessboard.convertSquareToInts(square)[0];
+                    int circleCol = Chessboard.convertSquareToInts(square)[1];
+                    grid.add(circle, circleCol, circleRow);
+                    GridPane.setHalignment(circle, HPos.CENTER);
+                    GridPane.setValignment(circle, VPos.CENTER);
+                    chessboard.circles.add(circle);
+                }
             }
 
             mouseX = event.getSceneX();
@@ -108,35 +112,63 @@ public abstract class Piece extends ImageView {
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
             String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
             boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
-            if (rightTurn && canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
+            if (rightTurn && canMoveTo(newRow, newCol)) {
                 ObservableList<Node> nodes = grid.getChildren();
                 for (Node node : nodes){
                     if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
                         grid.getChildren().remove(node);
+                        if (((Piece) node).isWhite) chessboard.whitePiecesLeft.remove(node);
+                        else chessboard.blackPiecesLeft.remove(node);
                         chessboard.piecesLeft.remove(node);
                         break;
                     }
                 }
                 grid.getChildren().remove(this);
+
                 // Check if it was a passant capture
                 if (this instanceof Pawn && chessboard.piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
                 {
-                        Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
-                        grid.getChildren().remove(pawnToRemove);
-                        chessboard.piecesLeft.remove(pawnToRemove);
-                        chessboard.piecesOnBoard[oldRow][newCol] = null;
+                    System.out.println("passant capture");
+                    Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
+                    if (pawnToRemove.isWhite) chessboard.whitePiecesLeft.remove(pawnToRemove);
+                    else chessboard.blackPiecesLeft.remove(pawnToRemove);
+                    chessboard.piecesLeft.remove(pawnToRemove);
+                    chessboard.piecesOnBoard[oldRow][newCol] = null;
+                    grid.getChildren().remove(pawnToRemove);
                 }
+
+                // Check if it was castling
+                if (this instanceof King && Math.abs(oldCol - newCol) == 2){
+                    int rookColumn;
+                    int movedRookColumn;
+                    if (newCol > oldCol) {
+                        rookColumn = newCol + 1;
+                        movedRookColumn = newCol - 1;
+                    } else {
+                        rookColumn = newCol - 2;
+                        movedRookColumn = newCol + 1;
+                    }
+                    Piece rookToMove = chessboard.piecesOnBoard[newRow][rookColumn];
+                    grid.getChildren().remove(rookToMove);
+                    grid.add(rookToMove, movedRookColumn, newRow);
+                    chessboard.piecesOnBoard[newRow][rookColumn] = null;
+                    chessboard.piecesOnBoard[newRow][movedRookColumn] = rookToMove;
+                    rookToMove.piecePosition = Chessboard.convertSquareToString(newRow, movedRookColumn);
+                }
+
+                // Pawn promotion
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
                     Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
+                    chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
                     grid.add(promotedPawn, newCol, newRow);
                     GridPane.setHalignment(promotedPawn, HPos.CENTER);
                     GridPane.setValignment(promotedPawn, VPos.CENTER);
                 } else {
                     grid.add(this, newCol, newRow);
+                    chessboard.piecesOnBoard[newRow][newCol] = this;
                 }
                 String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
                 chessboard.moves.add(new Move(initialSquare, targetSquare));
-                chessboard.piecesOnBoard[newRow][newCol] = this;
                 chessboard.piecesOnBoard[oldRow][oldCol] = null;
                 piecePosition = Chessboard.convertSquareToString(newRow, newCol);
                 chessboard.removeCircles(grid);
@@ -152,15 +184,26 @@ public abstract class Piece extends ImageView {
         });
     }
 
-    public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
-        getPossibleMoves(oldRow, oldCol, chessboard);
+    public boolean canMoveTo(int newRow, int newCol) {
 
         String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
         for (String move : availableMoves) {
-            if (move.equals(targetSquare)) return true;
+            if (move.equals(targetSquare)) {
+                isFirstMove = false;
+                return true;
+            }
         }
         return false;
     }
+
+    public List<String> getAvailableMoves() {
+        return availableMoves;
+    }
+
+//    @Override
+//    public String toString() {
+//        return getClass().getSimpleName();
+//    }
 
     public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
 }

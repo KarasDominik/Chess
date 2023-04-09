@@ -1,26 +1,20 @@
 package pl.karasdominik.chessgame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Pawn extends Piece {
 
-    protected boolean isFirstMove;
+    protected List<String> squaresAttacked = new ArrayList<>();
 
     public Pawn(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
-        isFirstMove = true;
-    }
-
-    @Override
-    public boolean canMoveTo(int oldRow, int oldCol, int newRow, int newCol, Chessboard chessboard) {
-        if (super.canMoveTo(oldRow, oldCol, newRow, newCol, chessboard)) {
-            isFirstMove = false;
-            return true;
-        }
-        return false;
     }
 
     public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
 
         availableMoves.clear();
+        squaresAttacked.clear();
 
         int availableMoveForward = isWhite ? -1 : 1;
 
@@ -46,6 +40,7 @@ public class Pawn extends Piece {
             if ((leftTargetSquare != null) && (leftTargetSquare.color != color)) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol - 1));
             }
+            squaresAttacked.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol - 1));
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
         try {
@@ -54,6 +49,7 @@ public class Pawn extends Piece {
             if (rightTargetSquare != null && rightTargetSquare.color != color) {
                 availableMoves.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
             }
+            squaresAttacked.add(Chessboard.convertSquareToString(currentRow + availableMoveForward, currentCol + 1));
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
         try {
