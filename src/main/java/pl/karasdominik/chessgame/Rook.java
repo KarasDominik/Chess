@@ -23,8 +23,6 @@ public class Rook extends Piece {
     public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
 
         availableMoves.clear();
-        System.out.println("Row: " + currentRow);
-        System.out.println("Col: " + currentCol);
 
         try {
             // Check moves upwards
