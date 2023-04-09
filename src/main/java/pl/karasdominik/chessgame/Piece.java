@@ -72,7 +72,8 @@ public abstract class Piece extends ImageView {
 
             // Display possible moves
             for (String square : availableMoves){
-                Circle circle = new Circle(30, Color.LIGHTGRAY);
+                Circle circle = new Circle(30);
+                circle.setFill(Color.rgb(255, 255, 225));
                 int circleRow = Chessboard.convertSquareToInts(square)[0];
                 int circleCol = Chessboard.convertSquareToInts(square)[1];
                 grid.add(circle, circleCol, circleRow);
@@ -139,7 +140,7 @@ public abstract class Piece extends ImageView {
                 chessboard.piecesOnBoard[oldRow][oldCol] = null;
                 piecePosition = Chessboard.convertSquareToString(newRow, newCol);
                 chessboard.removeCircles(grid);
-                updatePossibleMovesForEachPiece(chessboard);
+                chessboard.updatePossibleMovesForEachPiece();
 
             } else {
                 grid.getChildren().remove(this);
@@ -162,12 +163,4 @@ public abstract class Piece extends ImageView {
     }
 
     public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
-
-    public static void updatePossibleMovesForEachPiece(Chessboard chessboard){
-        for (Piece piece : chessboard.piecesLeft){
-            int pieceRow = Chessboard.convertSquareToInts(piece.piecePosition)[0];
-            int pieceColumn = Chessboard.convertSquareToInts(piece.piecePosition)[1];
-            piece.getPossibleMoves(pieceRow, pieceColumn, chessboard);
-        }
-    }
 }

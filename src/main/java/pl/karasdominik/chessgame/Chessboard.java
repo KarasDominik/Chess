@@ -22,7 +22,7 @@ public class Chessboard extends GridPane {
     protected static final int SIZE = 8;
     public Piece[][] piecesOnBoard = new Piece[8][8];
     protected List<Move> moves = new ArrayList<>();
-    protected List<Circle> circles = new ArrayList<>();
+    protected List<Circle> circles = new ArrayList<Circle>();
     protected List<Piece> piecesLeft = new ArrayList<>();
 
     public Chessboard() {
@@ -43,7 +43,7 @@ public class Chessboard extends GridPane {
                     colCounter += 1;
                 }
                 Rectangle square = new Rectangle();
-                Color color = (row + column) % 2 == 0 ? Color.WHITE : Color.LIGHTGREEN;
+                Color color = (row + column) % 2 == 0 ? Color.rgb(208, 193, 175) : Color.rgb(89, 44, 24);
                 square.setFill(color);
                 square.widthProperty().bind(widthProperty().divide(SIZE));
                 square.heightProperty().bind(heightProperty().divide(SIZE));
@@ -58,6 +58,7 @@ public class Chessboard extends GridPane {
             }
         }
         addPieces();
+        updatePossibleMovesForEachPiece();
     }
 
     private void addPieces() {
@@ -90,16 +91,16 @@ public class Chessboard extends GridPane {
                 GridPane.setValignment(piece, VPos.CENTER);
             }
         }
-//        printChessboard();
     }
-//    public void printChessboard() {
-//        for (int i = 0; i < 8; i++) {
-//            for (int j = 0; j < 8; j++) {
-//                System.out.printf(piecesOnBoard);
-//            }
-//            System.out.println();
-//        }
-//    }
+
+    public void updatePossibleMovesForEachPiece(){
+        for (Piece piece : piecesLeft){
+            int pieceRow = Chessboard.convertSquareToInts(piece.piecePosition)[0];
+            int pieceColumn = Chessboard.convertSquareToInts(piece.piecePosition)[1];
+            piece.getPossibleMoves(pieceRow, pieceColumn, this);
+        }
+    }
+
     public static String convertSquareToString(int row, int column){
         String firstLetter = switch(column){
             case 0 -> "a";
