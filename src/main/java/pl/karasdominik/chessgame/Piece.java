@@ -158,21 +158,77 @@ public abstract class Piece extends ImageView {
 
                 // Pawn promotion
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
-                    Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
-                    chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
-                    grid.add(promotedPawn, newCol, newRow);
-                    GridPane.setHalignment(promotedPawn, HPos.CENTER);
-                    GridPane.setValignment(promotedPawn, VPos.CENTER);
+                    List<Image> promotionImages = new ArrayList<>();
+                    if (isWhite){
+                        promotionImages.add(new Image(WHITE_QUEEN_IMAGE_FILE));
+                        promotionImages.add(new Image(WHITE_BISHOP_IMAGE_FILE));
+                        promotionImages.add(new Image(WHITE_ROOK_IMAGE_FILE));
+                        promotionImages.add(new Image(WHITE_KNIGHT_IMAGE_FILE));
+                    } else {
+                        promotionImages.add(new Image(BLACK_QUEEN_IMAGE_FILE));
+                        promotionImages.add(new Image(BLACK_BISHOP_IMAGE_FILE));
+                        promotionImages.add(new Image(BLACK_ROOK_IMAGE_FILE));
+                        promotionImages.add(new Image(BLACK_KNIGHT_IMAGE_FILE));
+                    }
+
+                    int r = 0;
+                    GridPane promotionPane = new GridPane();
+                    promotionPane.setStyle("-fx-background-color: lightgray;");
+                    promotionPane.setVgap(15);
+                    for (Image promotionImage : promotionImages){
+                        ImageView imageView = new ImageView(promotionImage);
+                        imageView.setOnMouseClicked(e -> {
+                            Image chosenImage = imageView.getImage();
+                            if (chosenImage.equals(promotionImages.get(0))) {
+                                Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
+                                chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
+                                grid.add(promotedPawn, newCol, newRow);
+                                GridPane.setHalignment(promotedPawn, HPos.CENTER);
+                                GridPane.setValignment(promotedPawn, VPos.CENTER);
+                            } else if (chosenImage.equals(promotionImages.get(1))){
+                                Piece promotedPawn = new Bishop(isWhite, "bishop", newRow, newCol);
+                                chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
+                                grid.add(promotedPawn, newCol, newRow);
+                                GridPane.setHalignment(promotedPawn, HPos.CENTER);
+                                GridPane.setValignment(promotedPawn, VPos.CENTER);
+                            } else if (chosenImage.equals(promotionImages.get(2))){
+                                Piece promotedPawn = new Rook(isWhite, "rook", newRow, newCol);
+                                chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
+                                grid.add(promotedPawn, newCol, newRow);
+                                GridPane.setHalignment(promotedPawn, HPos.CENTER);
+                                GridPane.setValignment(promotedPawn, VPos.CENTER);
+                            } else if (chosenImage.equals(promotionImages.get(3))){
+                                Piece promotedPawn = new Knight(isWhite, "knight", newRow, newCol);
+                                chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
+                                grid.add(promotedPawn, newCol, newRow);
+                                GridPane.setHalignment(promotedPawn, HPos.CENTER);
+                                GridPane.setValignment(promotedPawn, VPos.CENTER);
+                            }
+                            grid.getChildren().remove(promotionPane);
+                            String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
+                            chessboard.moves.add(new Move(initialSquare, targetSquare));
+                            chessboard.piecesOnBoard[oldRow][oldCol] = null;
+                            piecePosition = Chessboard.convertSquareToString(newRow, newCol);
+                            chessboard.removeCircles(grid);
+                            chessboard.updatePossibleMovesForEachPiece();
+                        });
+                        promotionPane.add(imageView, 0, r);
+                        GridPane.setHalignment(imageView, HPos.CENTER);
+                        GridPane.setValignment(imageView, VPos.CENTER);
+                        r++;
+                    }
+                    grid.add(promotionPane, newCol, newRow, 1, 4);
+
                 } else {
                     grid.add(this, newCol, newRow);
                     chessboard.piecesOnBoard[newRow][newCol] = this;
+                    String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
+                    chessboard.moves.add(new Move(initialSquare, targetSquare));
+                    chessboard.piecesOnBoard[oldRow][oldCol] = null;
+                    piecePosition = Chessboard.convertSquareToString(newRow, newCol);
+                    chessboard.removeCircles(grid);
+                    chessboard.updatePossibleMovesForEachPiece();
                 }
-                String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
-                chessboard.moves.add(new Move(initialSquare, targetSquare));
-                chessboard.piecesOnBoard[oldRow][oldCol] = null;
-                piecePosition = Chessboard.convertSquareToString(newRow, newCol);
-                chessboard.removeCircles(grid);
-                chessboard.updatePossibleMovesForEachPiece();
 
             } else {
                 grid.getChildren().remove(this);

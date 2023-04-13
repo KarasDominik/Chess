@@ -307,12 +307,12 @@ public class Chessboard extends GridPane {
         return possibleMoves;
     }
 
-//    public void printChessboard(){
-//        for (int row = 0; row < 8; row ++){
-//            for (int col = 0; col < 8; col++){
-//                System.out.printf("%10s ", piecesOnBoard[row][col]);
-//            }
-//            System.out.println();
-//        }
-//    }
+    public void printChessboard(){
+        for (int row = 0; row < 8; row ++){
+            for (int col = 0; col < 8; col++){
+                System.out.printf("%10s ", piecesOnBoard[row][col]);
+            }
+            System.out.println();
+        }
+    }
 }
