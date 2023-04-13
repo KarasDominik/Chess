@@ -15,7 +15,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow - 2][currentCol - 1] == null ||
                 chessboard.piecesOnBoard[currentRow - 2][currentCol - 1].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow - 2, currentCol - 1));
+                availableMoves.add(Helper.convertSquareToString(currentRow - 2, currentCol - 1));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -23,7 +23,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow - 2][currentCol + 1] == null ||
                     chessboard.piecesOnBoard[currentRow - 2][currentCol + 1].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow - 2, currentCol + 1));
+                availableMoves.add(Helper.convertSquareToString(currentRow - 2, currentCol + 1));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -31,7 +31,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow - 1][currentCol - 2] == null ||
                     chessboard.piecesOnBoard[currentRow - 1][currentCol - 2].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow - 1, currentCol - 2));
+                availableMoves.add(Helper.convertSquareToString(currentRow - 1, currentCol - 2));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -39,7 +39,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow + 1][currentCol - 2] == null ||
                     chessboard.piecesOnBoard[currentRow + 1][currentCol - 2].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow + 1, currentCol - 2));
+                availableMoves.add(Helper.convertSquareToString(currentRow + 1, currentCol - 2));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -47,7 +47,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow + 2][currentCol - 1] == null ||
                     chessboard.piecesOnBoard[currentRow + 2][currentCol - 1].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow + 2, currentCol - 1));
+                availableMoves.add(Helper.convertSquareToString(currentRow + 2, currentCol - 1));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -55,7 +55,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow + 2][currentCol + 1] == null ||
                     chessboard.piecesOnBoard[currentRow + 2][currentCol + 1].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow + 2, currentCol + 1));
+                availableMoves.add(Helper.convertSquareToString(currentRow + 2, currentCol + 1));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -63,7 +63,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow - 1][currentCol + 2] == null ||
                     chessboard.piecesOnBoard[currentRow - 1][currentCol + 2].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow - 1, currentCol + 2));
+                availableMoves.add(Helper.convertSquareToString(currentRow - 1, currentCol + 2));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 
@@ -71,7 +71,7 @@ public class Knight extends Piece {
         try {
             if (chessboard.piecesOnBoard[currentRow + 1][currentCol + 2] == null ||
                     chessboard.piecesOnBoard[currentRow + 1][currentCol + 2].color != color){
-                availableMoves.add(Chessboard.convertSquareToString(currentRow + 1, currentCol + 2));
+                availableMoves.add(Helper.convertSquareToString(currentRow + 1, currentCol + 2));
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
 

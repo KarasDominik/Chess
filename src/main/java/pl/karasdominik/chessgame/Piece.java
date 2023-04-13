@@ -16,24 +16,6 @@ import java.util.List;
 
 public abstract class Piece extends ImageView {
 
-    private static final String WHITE_PAWN_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whitePawn.png";
-    private static final String BLACK_PAWN_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackPawn.png";
-
-    private static final String WHITE_KNIGHT_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whiteKnight.png";
-    private static final String BLACK_KNIGHT_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackKnight.png";
-
-    private static final String WHITE_ROOK_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whiteRook.png";
-    private static final String BLACK_ROOK_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackRook.png";
-
-    private static final String WHITE_QUEEN_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whiteQueen.png";
-    private static final String BLACK_QUEEN_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackQueen.png";
-
-    private static final String WHITE_KING_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whiteKing.png";
-    private static final String BLACK_KING_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackKing.png";
-
-    private static final String WHITE_BISHOP_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\whiteBishop.png";
-    private static final String BLACK_BISHOP_IMAGE_FILE = "C:\\Users\\domin\\IdeaProjects\\Chess\\Images\\blackBishop.png";
-
     protected final boolean isWhite;
     protected final Color color;
     protected String piecePosition;
@@ -48,17 +30,17 @@ public abstract class Piece extends ImageView {
         this.isWhite = isWhite;
         this.color = isWhite ? Color.WHITE : Color.BLACK;
         this.availableMoves = new ArrayList<>();
-        piecePosition = Chessboard.convertSquareToString(row, col);
+        piecePosition = Helper.convertSquareToString(row, col);
         isFirstMove = true;
 
         // Assign an unique value and image for each piece
         String pieceImageFile = switch (type){
-            case "pawn" -> isWhite ? WHITE_PAWN_IMAGE_FILE : BLACK_PAWN_IMAGE_FILE;
-            case "rook" -> isWhite ? WHITE_ROOK_IMAGE_FILE : BLACK_ROOK_IMAGE_FILE;
-            case "bishop" -> isWhite ? WHITE_BISHOP_IMAGE_FILE : BLACK_BISHOP_IMAGE_FILE;
-            case "knight" -> isWhite ? WHITE_KNIGHT_IMAGE_FILE : BLACK_KNIGHT_IMAGE_FILE;
-            case "queen" -> isWhite ? WHITE_QUEEN_IMAGE_FILE : BLACK_QUEEN_IMAGE_FILE;
-            default -> isWhite ? WHITE_KING_IMAGE_FILE : BLACK_KING_IMAGE_FILE;
+            case "pawn" -> isWhite ? Helper.WHITE_PAWN_IMAGE_FILE : Helper.BLACK_PAWN_IMAGE_FILE;
+            case "rook" -> isWhite ? Helper.WHITE_ROOK_IMAGE_FILE : Helper.BLACK_ROOK_IMAGE_FILE;
+            case "bishop" -> isWhite ? Helper.WHITE_BISHOP_IMAGE_FILE : Helper.BLACK_BISHOP_IMAGE_FILE;
+            case "knight" -> isWhite ? Helper.WHITE_KNIGHT_IMAGE_FILE : Helper.BLACK_KNIGHT_IMAGE_FILE;
+            case "queen" -> isWhite ? Helper.WHITE_QUEEN_IMAGE_FILE : Helper.BLACK_QUEEN_IMAGE_FILE;
+            default -> isWhite ? Helper.WHITE_KING_IMAGE_FILE : Helper.BLACK_KING_IMAGE_FILE;
         };
         Image pieceImage = new Image(pieceImageFile);
         setImage(pieceImage);
@@ -74,16 +56,7 @@ public abstract class Piece extends ImageView {
 
             // Display possible moves
             if (chessboard.moves.size() % 2 == 0 && this.isWhite || chessboard.moves.size() % 2 != 0 && !this.isWhite) {
-                for (String square : availableMoves) {
-                    Circle circle = new Circle(30);
-                    circle.setFill(Color.rgb(255, 255, 225));
-                    int circleRow = Chessboard.convertSquareToInts(square)[0];
-                    int circleCol = Chessboard.convertSquareToInts(square)[1];
-                    grid.add(circle, circleCol, circleRow);
-                    GridPane.setHalignment(circle, HPos.CENTER);
-                    GridPane.setValignment(circle, VPos.CENTER);
-                    chessboard.circles.add(circle);
-                }
+                displayPossibleMoves(grid, chessboard);
             }
 
             mouseX = event.getSceneX();
@@ -110,16 +83,12 @@ public abstract class Piece extends ImageView {
 
             int newRow = (int) (event.getSceneY() / (grid.getHeight() / 8));
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
-            String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
             boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
             if (rightTurn && canMoveTo(newRow, newCol)) {
                 ObservableList<Node> nodes = grid.getChildren();
                 for (Node node : nodes){
                     if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
                         grid.getChildren().remove(node);
-                        if (((Piece) node).isWhite) chessboard.whitePiecesLeft.remove(node);
-                        else chessboard.blackPiecesLeft.remove(node);
-                        chessboard.piecesLeft.remove(node);
                         break;
                     }
                 }
@@ -128,12 +97,7 @@ public abstract class Piece extends ImageView {
                 // Check if it was a passant capture
                 if (this instanceof Pawn && chessboard.piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
                 {
-                    System.out.println("passant capture");
                     Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
-                    if (pawnToRemove.isWhite) chessboard.whitePiecesLeft.remove(pawnToRemove);
-                    else chessboard.blackPiecesLeft.remove(pawnToRemove);
-                    chessboard.piecesLeft.remove(pawnToRemove);
-                    chessboard.piecesOnBoard[oldRow][newCol] = null;
                     grid.getChildren().remove(pawnToRemove);
                 }
 
@@ -153,26 +117,16 @@ public abstract class Piece extends ImageView {
                     grid.add(rookToMove, movedRookColumn, newRow);
                     chessboard.piecesOnBoard[newRow][rookColumn] = null;
                     chessboard.piecesOnBoard[newRow][movedRookColumn] = rookToMove;
-                    rookToMove.piecePosition = Chessboard.convertSquareToString(newRow, movedRookColumn);
+                    rookToMove.piecePosition = Helper.convertSquareToString(newRow, movedRookColumn);
                 }
 
                 // Pawn promotion
                 if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
-                    Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
-                    chessboard.piecesOnBoard[newRow][newCol] = promotedPawn;
-                    grid.add(promotedPawn, newCol, newRow);
-                    GridPane.setHalignment(promotedPawn, HPos.CENTER);
-                    GridPane.setValignment(promotedPawn, VPos.CENTER);
+                    ((Pawn) this).promotePawn(newRow, newCol, chessboard, grid);
                 } else {
                     grid.add(this, newCol, newRow);
-                    chessboard.piecesOnBoard[newRow][newCol] = this;
+                    chessboard.generateMove(this, newRow, newCol, oldRow, oldCol, grid);
                 }
-                String initialSquare = Chessboard.convertSquareToString(oldRow, oldCol);
-                chessboard.moves.add(new Move(initialSquare, targetSquare));
-                chessboard.piecesOnBoard[oldRow][oldCol] = null;
-                piecePosition = Chessboard.convertSquareToString(newRow, newCol);
-                chessboard.removeCircles(grid);
-                chessboard.updatePossibleMovesForEachPiece();
 
             } else {
                 grid.getChildren().remove(this);
@@ -184,9 +138,9 @@ public abstract class Piece extends ImageView {
         });
     }
 
-    public boolean canMoveTo(int newRow, int newCol) {
+    private boolean canMoveTo(int newRow, int newCol) {
 
-        String targetSquare = Chessboard.convertSquareToString(newRow, newCol);
+        String targetSquare = Helper.convertSquareToString(newRow, newCol);
         for (String move : availableMoves) {
             if (move.equals(targetSquare)) {
                 isFirstMove = false;
@@ -200,10 +154,18 @@ public abstract class Piece extends ImageView {
         return availableMoves;
     }
 
-//    @Override
-//    public String toString() {
-//        return getClass().getSimpleName();
-//    }
+    private void displayPossibleMoves(GridPane grid, Chessboard chessboard){
+        for (String square : availableMoves) {
+            Circle circle = new Circle(30);
+            circle.setFill(Color.rgb(255, 255, 225));
+            int circleRow = Helper.convertSquareToInts(square)[0];
+            int circleCol = Helper.convertSquareToInts(square)[1];
+            grid.add(circle, circleCol, circleRow);
+            GridPane.setHalignment(circle, HPos.CENTER);
+            GridPane.setValignment(circle, VPos.CENTER);
+            chessboard.circles.add(circle);
+        }
+    }
 
     public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
 }

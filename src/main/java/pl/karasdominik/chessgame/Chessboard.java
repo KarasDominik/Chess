@@ -21,12 +21,12 @@ record Move(String initialSquare, String targetSquare) {
 public class Chessboard extends GridPane {
 
     protected static final int SIZE = 8;
-    public Piece[][] piecesOnBoard = new Piece[8][8];
+    protected Piece[][] piecesOnBoard = new Piece[8][8];
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
     protected List<Piece> piecesLeft = new ArrayList<>();
-    protected List<Piece> whitePiecesLeft = new ArrayList<>();
-    protected List<Piece> blackPiecesLeft = new ArrayList<>();
+    private List<Piece> whitePiecesLeft = new ArrayList<>();
+    private List<Piece> blackPiecesLeft = new ArrayList<>();
     protected List<String> squaresAttackedByWhite = new ArrayList<>();
     protected List<String> squaresAttackedByBlack = new ArrayList<>();
     protected King whiteKing;
@@ -64,11 +64,22 @@ public class Chessboard extends GridPane {
                 add(stackPane, column, row);
             }
         }
-        addPieces();
+        addStartingPieces();
         updatePossibleMovesForEachPiece();
     }
 
-    private void addPieces() {
+    public void generateMove(Piece piece, int newRow, int newColumn, int oldRow, int oldCol, GridPane grid){
+        piecesOnBoard[newRow][newColumn] = piece;
+        String initialSquare = piece.piecePosition;
+        String targetSquare = Helper.convertSquareToString(newRow, newColumn);
+        moves.add(new Move(initialSquare, targetSquare));
+        piecesOnBoard[oldRow][oldCol] = null;
+        piece.piecePosition = targetSquare;
+        removeCircles(grid);
+        updatePossibleMovesForEachPiece();
+    }
+
+    private void addStartingPieces() {
         boolean isWhite = false;
         for (int row = 0; row < SIZE; row++) {
             if (!(row == 0 || row == 1 || row == 6 || row == 7)) {
@@ -105,10 +116,17 @@ public class Chessboard extends GridPane {
         }
     }
 
+    public void addPieceToTheBoard(Piece piece, int row, int column, GridPane grid){
+        piecesOnBoard[row][column] = piece;
+        grid.add(piece, column, row);
+        GridPane.setHalignment(piece, HPos.CENTER);
+        GridPane.setValignment(piece, VPos.CENTER);
+    }
+
     public void updatePossibleMoves() {
         for (Piece piece : piecesLeft) {
-            int pieceRow = Chessboard.convertSquareToInts(piece.piecePosition)[0];
-            int pieceColumn = Chessboard.convertSquareToInts(piece.piecePosition)[1];
+            int pieceRow = Helper.convertSquareToInts(piece.piecePosition)[0];
+            int pieceColumn = Helper.convertSquareToInts(piece.piecePosition)[1];
             piece.getPossibleMoves(pieceRow, pieceColumn, this);
         }
     }
@@ -116,7 +134,7 @@ public class Chessboard extends GridPane {
     public void updateSquaresAttackedByWhite() {
         squaresAttackedByWhite.clear();
         for (Piece piece : whitePiecesLeft) {
-            piece.getPossibleMoves(Chessboard.convertSquareToInts(piece.piecePosition)[0], Chessboard.convertSquareToInts(piece.piecePosition)[1], this);
+            piece.getPossibleMoves(Helper.convertSquareToInts(piece.piecePosition)[0], Helper.convertSquareToInts(piece.piecePosition)[1], this);
             if (piece instanceof Pawn) {
                 squaresAttackedByWhite.addAll(((Pawn) piece).squaresAttacked);
             } else if (piece instanceof King) {
@@ -130,7 +148,7 @@ public class Chessboard extends GridPane {
     public void updateSquaresAttackedByBlack() {
         squaresAttackedByBlack.clear();
         for (Piece piece : blackPiecesLeft) {
-            piece.getPossibleMoves(Chessboard.convertSquareToInts(piece.piecePosition)[0], Chessboard.convertSquareToInts(piece.piecePosition)[1], this);
+            piece.getPossibleMoves(Helper.convertSquareToInts(piece.piecePosition)[0], Helper.convertSquareToInts(piece.piecePosition)[1], this);
             if (piece instanceof Pawn) {
                 squaresAttackedByBlack.addAll(((Pawn) piece).squaresAttacked);
             } else if (piece instanceof King) {
@@ -170,23 +188,22 @@ public class Chessboard extends GridPane {
         }
     }
 
-
     public void simulateEveryMovePiece(Piece piece, boolean isWhite) {
         List<String> movesToRemove = new ArrayList<>();
         King kingToCheck = isWhite ? whiteKing : blackKing;
         for (String possibleMove : piece.availableMoves) {
 
             // Simulate move
-            int initialSquareRow = convertSquareToInts(piece.piecePosition)[0];
-            int initialSquareColumn = convertSquareToInts(piece.piecePosition)[1];
+            int initialSquareRow = Helper.convertSquareToInts(piece.piecePosition)[0];
+            int initialSquareColumn = Helper.convertSquareToInts(piece.piecePosition)[1];
 
-            int targetSquareRow = convertSquareToInts(possibleMove)[0];
-            int targetSquareColumn = convertSquareToInts(possibleMove)[1];
+            int targetSquareRow = Helper.convertSquareToInts(possibleMove)[0];
+            int targetSquareColumn = Helper.convertSquareToInts(possibleMove)[1];
 
             Piece tempPiece = piecesOnBoard[targetSquareRow][targetSquareColumn];
             piecesOnBoard[targetSquareRow][targetSquareColumn] = piece;
             piecesOnBoard[initialSquareRow][initialSquareColumn] = null;
-            piece.piecePosition = convertSquareToString(targetSquareRow, targetSquareColumn);
+            piece.piecePosition = Helper.convertSquareToString(targetSquareRow, targetSquareColumn);
 
             if (isWhite) {
                 updateBlackPiecesLeft();
@@ -203,7 +220,7 @@ public class Chessboard extends GridPane {
 
             piecesOnBoard[initialSquareRow][initialSquareColumn] = piece;
             piecesOnBoard[targetSquareRow][targetSquareColumn] = tempPiece;
-            piece.piecePosition = convertSquareToString(initialSquareRow, initialSquareColumn);
+            piece.piecePosition = Helper.convertSquareToString(initialSquareRow, initialSquareColumn);
 
             if (isWhite) {
                 updateBlackPiecesLeft();
@@ -260,37 +277,6 @@ public class Chessboard extends GridPane {
         }
     }
 
-    public static String convertSquareToString(int row, int column) {
-        String firstLetter = switch (column) {
-            case 0 -> "a";
-            case 1 -> "b";
-            case 2 -> "c";
-            case 3 -> "d";
-            case 4 -> "e";
-            case 5 -> "f";
-            case 6 -> "g";
-            default -> "h";
-        };
-        String secondLetter = String.valueOf(Math.abs(row - 8));
-
-        return firstLetter + secondLetter;
-    }
-
-    public static int[] convertSquareToInts(String square) {
-        int row = 8 - (square.charAt(1) - '0');
-        int col = switch (square.charAt(0)) {
-            case 'a' -> 0;
-            case 'b' -> 1;
-            case 'c' -> 2;
-            case 'd' -> 3;
-            case 'e' -> 4;
-            case 'f' -> 5;
-            case 'g' -> 6;
-            default -> 7;
-        };
-        return new int[]{row, col};
-    }
-
     public void removeCircles(GridPane grid) {
         for (Circle circle : circles) {
             grid.getChildren().remove(circle);
@@ -306,13 +292,4 @@ public class Chessboard extends GridPane {
         }
         return possibleMoves;
     }
-
-//    public void printChessboard(){
-//        for (int row = 0; row < 8; row ++){
-//            for (int col = 0; col < 8; col++){
-//                System.out.printf("%10s ", piecesOnBoard[row][col]);
-//            }
-//            System.out.println();
-//        }
-//    }
 }

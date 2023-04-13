@@ -1,6 +1,6 @@
 package pl.karasdominik.chessgame;
 
-public class SlidingPiece extends Piece {
+public abstract class SlidingPiece extends Piece {
 
     public SlidingPiece(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
@@ -17,11 +17,11 @@ public class SlidingPiece extends Piece {
             try {
                 int row = currentRow - 1;
                 while (chessboard.piecesOnBoard[row][currentCol] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, currentCol));
+                    availableMoves.add(Helper.convertSquareToString(row, currentCol));
                     row -= 1;
                 }
                 if (chessboard.piecesOnBoard[row][currentCol].color != color) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, currentCol));
+                    availableMoves.add(Helper.convertSquareToString(row, currentCol));
                 }
             } catch (ArrayIndexOutOfBoundsException ignored) {
             }
@@ -30,11 +30,11 @@ public class SlidingPiece extends Piece {
             try {
                 int row = currentRow + 1;
                 while (chessboard.piecesOnBoard[row][currentCol] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, currentCol));
+                    availableMoves.add(Helper.convertSquareToString(row, currentCol));
                     row += 1;
                 }
                 if (chessboard.piecesOnBoard[row][currentCol].color != color) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, currentCol));
+                    availableMoves.add(Helper.convertSquareToString(row, currentCol));
                 }
             } catch (ArrayIndexOutOfBoundsException ignored) {
             }
@@ -43,11 +43,11 @@ public class SlidingPiece extends Piece {
             try {
                 int column = currentCol + 1;
                 while (chessboard.piecesOnBoard[currentRow][column] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(currentRow, column));
+                    availableMoves.add(Helper.convertSquareToString(currentRow, column));
                     column += 1;
                 }
                 if (chessboard.piecesOnBoard[currentRow][column].color != color) {
-                    availableMoves.add(Chessboard.convertSquareToString(currentRow, column));
+                    availableMoves.add(Helper.convertSquareToString(currentRow, column));
                 }
             } catch (ArrayIndexOutOfBoundsException ignored) {
             }
@@ -56,11 +56,11 @@ public class SlidingPiece extends Piece {
             try {
                 int column = currentCol - 1;
                 while (chessboard.piecesOnBoard[currentRow][column] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(currentRow, column));
+                    availableMoves.add(Helper.convertSquareToString(currentRow, column));
                     column -= 1;
                 }
                 if (chessboard.piecesOnBoard[currentRow][column].color != color) {
-                    availableMoves.add(Chessboard.convertSquareToString(currentRow, column));
+                    availableMoves.add(Helper.convertSquareToString(currentRow, column));
                 }
             } catch (ArrayIndexOutOfBoundsException ignored) {
             }
@@ -73,11 +73,11 @@ public class SlidingPiece extends Piece {
             int col = currentCol - 1;
             try {
                 while (chessboard.piecesOnBoard[row][col] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, col));
+                    availableMoves.add(Helper.convertSquareToString(row, col));
                     row -= 1;
                     col -= 1;
                 }
-                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Chessboard.convertSquareToString(row, col));
+                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Helper.convertSquareToString(row, col));
             } catch (ArrayIndexOutOfBoundsException ignored) {}
 
             // Check moves upper right
@@ -85,11 +85,11 @@ public class SlidingPiece extends Piece {
                 row = currentRow - 1;
                 col = currentCol + 1;
                 while (chessboard.piecesOnBoard[row][col] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, col));
+                    availableMoves.add(Helper.convertSquareToString(row, col));
                     row -= 1;
                     col += 1;
                 }
-                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Chessboard.convertSquareToString(row, col));
+                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Helper.convertSquareToString(row, col));
             } catch (ArrayIndexOutOfBoundsException ignored){}
 
             // Check moves bottom left
@@ -97,11 +97,11 @@ public class SlidingPiece extends Piece {
                 row = currentRow + 1;
                 col = currentCol - 1;
                 while (chessboard.piecesOnBoard[row][col] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, col));
+                    availableMoves.add(Helper.convertSquareToString(row, col));
                     row += 1;
                     col -= 1;
                 }
-                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Chessboard.convertSquareToString(row, col));
+                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Helper.convertSquareToString(row, col));
             } catch (ArrayIndexOutOfBoundsException ignored){}
 
             // Check moves bottom right
@@ -109,11 +109,11 @@ public class SlidingPiece extends Piece {
                 row = currentRow + 1;
                 col = currentCol + 1;
                 while (chessboard.piecesOnBoard[row][col] == null) {
-                    availableMoves.add(Chessboard.convertSquareToString(row, col));
+                    availableMoves.add(Helper.convertSquareToString(row, col));
                     row += 1;
                     col += 1;
                 }
-                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Chessboard.convertSquareToString(row, col));
+                if (chessboard.piecesOnBoard[row][col].color != color) availableMoves.add(Helper.convertSquareToString(row, col));
             } catch (ArrayIndexOutOfBoundsException ignored){}
         }
     }
