@@ -72,6 +72,7 @@ public class Chessboard extends GridPane {
 
     public void generateMove(Piece piece, int newRow, int newCol, int oldRow, int oldCol, GridPane grid){
         ObservableList<Node> nodes = grid.getChildren();
+        Engine engine = chessApplication.getEngine();
         for (Node node : nodes){
             if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
                 grid.getChildren().remove(node);
@@ -120,10 +121,12 @@ public class Chessboard extends GridPane {
         String initialSquare = piece.piecePosition;
         String targetSquare = Helper.convertSquareToString(newRow, newCol);
         moves.add(new Move(initialSquare, targetSquare));
-        System.out.println(moves.size());
         piece.piecePosition = targetSquare;
         removeCircles(grid);
         updatePossibleMovesForEachPiece();
+        if (engine.isMyTurn()){
+            engine.makeMove(grid);
+        }
     }
 
     private void addStartingPieces() {
