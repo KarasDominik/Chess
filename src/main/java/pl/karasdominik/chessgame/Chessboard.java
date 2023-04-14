@@ -1,8 +1,10 @@
 package pl.karasdominik.chessgame;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -25,8 +27,8 @@ public class Chessboard extends GridPane {
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
     protected List<Piece> piecesLeft = new ArrayList<>();
-    private List<Piece> whitePiecesLeft = new ArrayList<>();
-    private List<Piece> blackPiecesLeft = new ArrayList<>();
+    protected List<Piece> whitePiecesLeft = new ArrayList<>();
+    protected List<Piece> blackPiecesLeft = new ArrayList<>();
     protected List<String> squaresAttackedByWhite = new ArrayList<>();
     protected List<String> squaresAttackedByBlack = new ArrayList<>();
     protected King whiteKing;
@@ -68,12 +70,57 @@ public class Chessboard extends GridPane {
         updatePossibleMovesForEachPiece();
     }
 
-    public void generateMove(Piece piece, int newRow, int newColumn, int oldRow, int oldCol, GridPane grid){
-        piecesOnBoard[newRow][newColumn] = piece;
-        String initialSquare = piece.piecePosition;
-        String targetSquare = Helper.convertSquareToString(newRow, newColumn);
-        moves.add(new Move(initialSquare, targetSquare));
+    public void generateMove(Piece piece, int newRow, int newCol, int oldRow, int oldCol, GridPane grid){
+        ObservableList<Node> nodes = grid.getChildren();
+        for (Node node : nodes){
+            if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
+                grid.getChildren().remove(node);
+                break;
+            }
+        }
+
+        grid.getChildren().remove(piece);
+        // Check if it was a passant capture
+        if (piece instanceof Pawn && piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
+        {
+            Piece pawnToRemove = piecesOnBoard[oldRow][newCol];
+            grid.getChildren().remove(pawnToRemove);
+        }
+
+        // Check if it was castling
+        if (piece instanceof King && Math.abs(oldCol - newCol) == 2){
+            int rookColumn;
+            int movedRookColumn;
+            if (newCol > oldCol) {
+                rookColumn = newCol + 1;
+                movedRookColumn = newCol - 1;
+            } else {
+                rookColumn = newCol - 2;
+                movedRookColumn = newCol + 1;
+            }
+            Piece rookToMove = piecesOnBoard[newRow][rookColumn];
+            grid.getChildren().remove(rookToMove);
+            grid.add(rookToMove, movedRookColumn, newRow);
+            piecesOnBoard[newRow][rookColumn] = null;
+            piecesOnBoard[newRow][movedRookColumn] = rookToMove;
+            rookToMove.piecePosition = Helper.convertSquareToString(newRow, movedRookColumn);
+        }
+
+        // Pawn promotion
+        if (piece instanceof Pawn && ((piece.isWhite && newRow == 0) || (!piece.isWhite && newRow == 7))){
+            ((Pawn) piece).promotePawn(newRow, newCol, this, grid);
+            return;
+        }
+        else {
+            grid.add(piece, newCol, newRow);
+        }
+
+        piecesOnBoard[newRow][newCol] = piece;
         piecesOnBoard[oldRow][oldCol] = null;
+        String initialSquare = piece.piecePosition;
+        String targetSquare = Helper.convertSquareToString(newRow, newCol);
+        moves.add(new Move(initialSquare, targetSquare));
+        System.out.println(moves.size());
         piece.piecePosition = targetSquare;
         removeCircles(grid);
         updatePossibleMovesForEachPiece();

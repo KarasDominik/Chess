@@ -1,9 +1,7 @@
 package pl.karasdominik.chessgame;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -46,7 +44,6 @@ public abstract class Piece extends ImageView {
         setImage(pieceImage);
 
         // Enable mouse dragging for each piece
-
         setOnMousePressed((MouseEvent event) -> {
             Chessboard chessboard = chessApplication.getChessboard();
             GridPane grid = (GridPane) getParent();
@@ -85,50 +82,9 @@ public abstract class Piece extends ImageView {
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
             boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
             if (rightTurn && canMoveTo(newRow, newCol)) {
-                ObservableList<Node> nodes = grid.getChildren();
-                for (Node node : nodes){
-                    if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
-                        grid.getChildren().remove(node);
-                        break;
-                    }
-                }
-                grid.getChildren().remove(this);
-
-                // Check if it was a passant capture
-                if (this instanceof Pawn && chessboard.piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
-                {
-                    Piece pawnToRemove = chessboard.piecesOnBoard[oldRow][newCol];
-                    grid.getChildren().remove(pawnToRemove);
-                }
-
-                // Check if it was castling
-                if (this instanceof King && Math.abs(oldCol - newCol) == 2){
-                    int rookColumn;
-                    int movedRookColumn;
-                    if (newCol > oldCol) {
-                        rookColumn = newCol + 1;
-                        movedRookColumn = newCol - 1;
-                    } else {
-                        rookColumn = newCol - 2;
-                        movedRookColumn = newCol + 1;
-                    }
-                    Piece rookToMove = chessboard.piecesOnBoard[newRow][rookColumn];
-                    grid.getChildren().remove(rookToMove);
-                    grid.add(rookToMove, movedRookColumn, newRow);
-                    chessboard.piecesOnBoard[newRow][rookColumn] = null;
-                    chessboard.piecesOnBoard[newRow][movedRookColumn] = rookToMove;
-                    rookToMove.piecePosition = Helper.convertSquareToString(newRow, movedRookColumn);
-                }
-
-                // Pawn promotion
-                if (this instanceof Pawn && ((isWhite && newRow == 0) || (!isWhite && newRow == 7))){
-                    ((Pawn) this).promotePawn(newRow, newCol, chessboard, grid);
-                } else {
-                    grid.add(this, newCol, newRow);
-                    chessboard.generateMove(this, newRow, newCol, oldRow, oldCol, grid);
-                }
-
-            } else {
+                chessboard.generateMove(this, newRow, newCol, oldRow, oldCol, grid);
+            }
+            else {
                 grid.getChildren().remove(this);
                 grid.add(this, oldCol, oldRow);
             }
@@ -141,8 +97,8 @@ public abstract class Piece extends ImageView {
     private boolean canMoveTo(int newRow, int newCol) {
 
         String targetSquare = Helper.convertSquareToString(newRow, newCol);
-        for (String move : availableMoves) {
-            if (move.equals(targetSquare)) {
+        for (String availableMove : availableMoves) {
+            if (availableMove.equals(targetSquare)) {
                 isFirstMove = false;
                 return true;
             }
