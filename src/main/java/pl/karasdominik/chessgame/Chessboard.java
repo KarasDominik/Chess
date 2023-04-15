@@ -17,8 +17,7 @@ import javafx.scene.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-record Move(String initialSquare, String targetSquare) {
-}
+record Move(Piece piece, String initialSquare, String targetSquare){}
 
 public class Chessboard extends GridPane {
 
@@ -29,8 +28,11 @@ public class Chessboard extends GridPane {
     protected List<Piece> piecesLeft = new ArrayList<>();
     protected List<Piece> whitePiecesLeft = new ArrayList<>();
     protected List<Piece> blackPiecesLeft = new ArrayList<>();
+
     protected List<String> squaresAttackedByWhite = new ArrayList<>();
     protected List<String> squaresAttackedByBlack = new ArrayList<>();
+    protected List<Move> possibleMovesForWhite = new ArrayList<>();
+    protected List<Move> possibleMovesForBlack = new ArrayList<>();
     protected King whiteKing;
     protected King blackKing;
 
@@ -120,11 +122,13 @@ public class Chessboard extends GridPane {
         piecesOnBoard[oldRow][oldCol] = null;
         String initialSquare = piece.piecePosition;
         String targetSquare = Helper.convertSquareToString(newRow, newCol);
-        moves.add(new Move(initialSquare, targetSquare));
+        moves.add(new Move(piece, initialSquare, targetSquare));
         piece.piecePosition = targetSquare;
         removeCircles(grid);
         updatePossibleMovesForEachPiece();
-        if (engine.isMyTurn()){
+        updatePossibleMovesForBlackAndWhite();
+        if (checkForEndings()) return;
+        if (engine.isMyTurn() && !checkForEndings()){
             engine.makeMove(grid);
         }
     }
@@ -225,17 +229,6 @@ public class Chessboard extends GridPane {
                 simulateEveryMovePiece(piece, piece.isWhite);
             }
         }
-
-        // Check for the endings
-        if (blackKing.isInCheck(this) && getPossibleMoves(false) == 0) {
-            System.out.println("Checkmate, white wins");
-        } else if (whiteKing.isInCheck(this) && getPossibleMoves(true) == 0) {
-            System.out.println("Checkmate, black wins");
-        } else if (blackPiecesLeft.size() == 1 && whitePiecesLeft.size() == 1) {
-            System.out.println("Draw");
-        } else if (getPossibleMoves(false) == 0 || getPossibleMoves(true) == 0) {
-            System.out.println("Stalemate");
-        }
     }
 
     public void simulateEveryMovePiece(Piece piece, boolean isWhite) {
@@ -334,12 +327,32 @@ public class Chessboard extends GridPane {
         circles.clear();
     }
 
-    private int getPossibleMoves(boolean isWhite){
-        List<Piece> piecesToCheck = isWhite ? whitePiecesLeft : blackPiecesLeft;
-        int possibleMoves = 0;
-        for (Piece piece : piecesToCheck){
-            possibleMoves += piece.availableMoves.size();
+    private void updatePossibleMovesForBlackAndWhite(){
+        possibleMovesForWhite.clear();
+        possibleMovesForBlack.clear();
+        for (Piece piece : piecesLeft) {
+            List<Move> listToUpdate = piece.isWhite ? possibleMovesForWhite : possibleMovesForBlack;
+            for (String pieceMove : piece.availableMoves) {
+                listToUpdate.add(new Move(piece, piece.piecePosition, pieceMove));
+            }
         }
-        return possibleMoves;
+    }
+
+    private boolean checkForEndings(){
+        boolean isEnd = false;
+        if (blackKing.isInCheck(this) && possibleMovesForBlack.size() == 0) {
+            System.out.println("Checkmate, white wins");
+            isEnd =  true;
+        } else if (whiteKing.isInCheck(this) && possibleMovesForWhite.size() == 0) {
+            System.out.println("Checkmate, black wins");
+            isEnd =  true;
+        } else if (blackPiecesLeft.size() == 1 && whitePiecesLeft.size() == 1) {
+            System.out.println("Draw");
+            isEnd =  true;
+        } else if (possibleMovesForWhite.size() == 0 || possibleMovesForBlack.size() == 0) {
+            System.out.println("Stalemate");
+            isEnd =  true;
+        }
+        return isEnd;
     }
 }
