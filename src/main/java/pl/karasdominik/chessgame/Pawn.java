@@ -64,15 +64,15 @@ public class Pawn extends Piece {
             if (Helper.convertSquareToInts(piecePosition)[0] == initialRow) {
                 if (chessboard.piecesOnBoard[currentRow][currentCol - 1] instanceof Pawn || chessboard.piecesOnBoard[currentRow][currentCol + 1] instanceof Pawn) {
                     Move lastMove = chessboard.moves.get(chessboard.moves.size() - 1);
-                    if (Math.abs(Helper.convertSquareToInts(lastMove.targetSquare())[0] - Helper.convertSquareToInts(lastMove.initialSquare())[0]) == 2) {
-                        availableMoves.add(Helper.convertSquareToString(currentRow + availableMoveForward, Helper.convertSquareToInts(lastMove.targetSquare())[1]));
+                    if (Math.abs(Helper.convertSquareToInts(lastMove.targetSquare)[0] - Helper.convertSquareToInts(lastMove.initialSquare)[0]) == 2) {
+                        availableMoves.add(Helper.convertSquareToString(currentRow + availableMoveForward, Helper.convertSquareToInts(lastMove.targetSquare)[1]));
                     }
                 }
             }
         } catch (ArrayIndexOutOfBoundsException ignored){}
     }
 
-    public void promotePawn(int newRow, int newCol, Chessboard chessboard, GridPane grid)
+    public void promotePawn(int newRow, int newCol, Chessboard chessboard)
     {
         List<Image> promotionImages = Helper.getPromotionImages(isWhite);
         int[] initialSquareLocation = Helper.convertSquareToInts(piecePosition);
@@ -87,28 +87,28 @@ public class Pawn extends Piece {
                 Image chosenImage = imageView.getImage();
                 if (chosenImage.equals(promotionImages.get(0))) {
                     Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol, grid);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1], grid);
+                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
+                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
                 } else if (chosenImage.equals(promotionImages.get(1))){
                     Piece promotedPawn = new Bishop(isWhite, "bishop", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol, grid);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1], grid);
+                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
+                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
                 } else if (chosenImage.equals(promotionImages.get(2))){
                     Piece promotedPawn = new Rook(isWhite, "rook", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol, grid);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1], grid);
+                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
+                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
                 } else if (chosenImage.equals(promotionImages.get(3))){
                     Piece promotedPawn = new Knight(isWhite, "knight", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol, grid);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1], grid);
+                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
+                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
                 }
-                grid.getChildren().remove(promotionPane);
+                chessboard.getChildren().remove(promotionPane);
             });
             promotionPane.add(imageView, 0, row);
             GridPane.setHalignment(imageView, HPos.CENTER);
             GridPane.setValignment(imageView, VPos.CENTER);
             row++;
         }
-        grid.add(promotionPane, newCol, isWhite ? newRow : newRow - 3, 1, 4);
+        chessboard.add(promotionPane, newCol, isWhite ? newRow : newRow - 3, 1, 4);
     }
 }
