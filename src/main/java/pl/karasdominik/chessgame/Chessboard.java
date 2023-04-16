@@ -70,22 +70,22 @@ public class Chessboard extends GridPane {
         updatePossibleMovesForEachPiece();
     }
 
-    public void generateMove(Piece piece, int newRow, int newCol, int oldRow, int oldCol, GridPane grid){
-        ObservableList<Node> nodes = grid.getChildren();
+    public void generateMove(Piece piece, int newRow, int newCol, int oldRow, int oldCol){
+        ObservableList<Node> nodes = getChildren();
         Engine engine = chessApplication.getEngine();
         for (Node node : nodes){
             if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
-                grid.getChildren().remove(node);
+                getChildren().remove(node);
                 break;
             }
         }
 
-        grid.getChildren().remove(piece);
+        getChildren().remove(piece);
         // Check if it was a passant capture
         if (piece instanceof Pawn && piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
         {
             Piece pawnToRemove = piecesOnBoard[oldRow][newCol];
-            grid.getChildren().remove(pawnToRemove);
+            getChildren().remove(pawnToRemove);
         }
 
         // Check if it was castling
@@ -100,8 +100,8 @@ public class Chessboard extends GridPane {
                 movedRookColumn = newCol + 1;
             }
             Piece rookToMove = piecesOnBoard[newRow][rookColumn];
-            grid.getChildren().remove(rookToMove);
-            grid.add(rookToMove, movedRookColumn, newRow);
+            getChildren().remove(rookToMove);
+            add(rookToMove, movedRookColumn, newRow);
             piecesOnBoard[newRow][rookColumn] = null;
             piecesOnBoard[newRow][movedRookColumn] = rookToMove;
             rookToMove.piecePosition = Helper.convertSquareToString(newRow, movedRookColumn);
@@ -109,11 +109,11 @@ public class Chessboard extends GridPane {
 
         // Pawn promotion
         if (piece instanceof Pawn && ((piece.isWhite && newRow == 0) || (!piece.isWhite && newRow == 7))){
-            ((Pawn) piece).promotePawn(newRow, newCol, this, grid);
+            ((Pawn) piece).promotePawn(newRow, newCol, this);
             return;
         }
         else {
-            grid.add(piece, newCol, newRow);
+            add(piece, newCol, newRow);
         }
 
         piecesOnBoard[newRow][newCol] = piece;
@@ -122,12 +122,12 @@ public class Chessboard extends GridPane {
         String targetSquare = Helper.convertSquareToString(newRow, newCol);
         moves.add(new Move(piece, initialSquare, targetSquare));
         piece.piecePosition = targetSquare;
-        removeCircles(grid);
+        removeCircles();
         updatePossibleMovesForEachPiece();
         updatePossibleMovesForBlackAndWhite();
         if (checkForEndings()) return;
         if (engine.isMyTurn() && !checkForEndings()){
-            engine.makeMove(grid);
+            engine.makeMove();
         }
     }
 
@@ -168,9 +168,9 @@ public class Chessboard extends GridPane {
         }
     }
 
-    public void addPieceToTheBoard(Piece piece, int row, int column, GridPane grid){
+    public void addPieceToTheBoard(Piece piece, int row, int column){
         piecesOnBoard[row][column] = piece;
-        grid.add(piece, column, row);
+        add(piece, column, row);
         GridPane.setHalignment(piece, HPos.CENTER);
         GridPane.setValignment(piece, VPos.CENTER);
     }
@@ -318,9 +318,9 @@ public class Chessboard extends GridPane {
         }
     }
 
-    public void removeCircles(GridPane grid) {
+    public void removeCircles() {
         for (Circle circle : circles) {
-            grid.getChildren().remove(circle);
+            getChildren().remove(circle);
         }
         circles.clear();
     }

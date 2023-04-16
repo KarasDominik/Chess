@@ -1,7 +1,5 @@
 package pl.karasdominik.chessgame;
 
-import javafx.scene.layout.GridPane;
-
 import java.util.List;
 import java.util.Random;
 
@@ -16,7 +14,7 @@ public class Engine {
         this.movesAvailable = playsWhite ? chessboard.possibleMovesForWhite : chessboard.possibleMovesForBlack;
     }
 
-    public void makeMove(GridPane grid){
+    public void makeMove(){
         Random random = new Random();
         int randomMove = random.nextInt(movesAvailable.size());
         Move move = movesAvailable.get(randomMove);
@@ -25,7 +23,7 @@ public class Engine {
         int newCol = Helper.convertSquareToInts(move.targetSquare)[1];
         int oldRow = Helper.convertSquareToInts(move.initialSquare)[0];
         int oldCol = Helper.convertSquareToInts(move.initialSquare)[1];
-        chessboard.generateMove(piece, newRow, newCol, oldRow, oldCol, grid);
+        chessboard.generateMove(piece, newRow, newCol, oldRow, oldCol);
     }
 
     public boolean isMyTurn(){

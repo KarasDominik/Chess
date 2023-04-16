@@ -49,7 +49,7 @@ public abstract class Piece extends ImageView {
             GridPane grid = (GridPane) getParent();
 
             // Remove any existing circles from the chessboard
-            chessboard.removeCircles(grid);
+            chessboard.removeCircles();
 
             // Display possible moves
             if (chessboard.moves.size() % 2 == 0 && this.isWhite || chessboard.moves.size() % 2 != 0 && !this.isWhite) {
@@ -82,7 +82,7 @@ public abstract class Piece extends ImageView {
             int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
             boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
             if (rightTurn && canMoveTo(newRow, newCol)) {
-                chessboard.generateMove(this, newRow, newCol, oldRow, oldCol, grid);
+                chessboard.generateMove(this, newRow, newCol, oldRow, oldCol);
             }
             else {
                 grid.getChildren().remove(this);
