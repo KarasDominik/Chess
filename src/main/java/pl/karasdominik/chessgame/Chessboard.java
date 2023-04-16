@@ -17,8 +17,6 @@ import javafx.scene.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-record Move(Piece piece, String initialSquare, String targetSquare){}
-
 public class Chessboard extends GridPane {
 
     protected static final int SIZE = 8;

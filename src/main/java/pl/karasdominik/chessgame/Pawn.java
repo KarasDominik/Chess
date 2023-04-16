@@ -64,8 +64,8 @@ public class Pawn extends Piece {
             if (Helper.convertSquareToInts(piecePosition)[0] == initialRow) {
                 if (chessboard.piecesOnBoard[currentRow][currentCol - 1] instanceof Pawn || chessboard.piecesOnBoard[currentRow][currentCol + 1] instanceof Pawn) {
                     Move lastMove = chessboard.moves.get(chessboard.moves.size() - 1);
-                    if (Math.abs(Helper.convertSquareToInts(lastMove.targetSquare())[0] - Helper.convertSquareToInts(lastMove.initialSquare())[0]) == 2) {
-                        availableMoves.add(Helper.convertSquareToString(currentRow + availableMoveForward, Helper.convertSquareToInts(lastMove.targetSquare())[1]));
+                    if (Math.abs(Helper.convertSquareToInts(lastMove.targetSquare)[0] - Helper.convertSquareToInts(lastMove.initialSquare)[0]) == 2) {
+                        availableMoves.add(Helper.convertSquareToString(currentRow + availableMoveForward, Helper.convertSquareToInts(lastMove.targetSquare)[1]));
                     }
                 }
             }
