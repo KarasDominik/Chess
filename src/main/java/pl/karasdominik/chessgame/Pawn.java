@@ -15,14 +15,18 @@ public class Pawn extends Piece {
 
     public Pawn(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
+        this.value = 1;
     }
 
-    public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
+    public void getPossibleMoves(Chessboard chessboard) {
 
         availableMoves.clear();
         squaresAttacked.clear();
 
         int availableMoveForward = isWhite ? -1 : 1;
+
+        int currentRow = Helper.convertSquareToInts(piecePosition)[0];
+        int currentCol = Helper.convertSquareToInts(piecePosition)[1];
 
         // Check if it can move forward
         try {
@@ -72,43 +76,49 @@ public class Pawn extends Piece {
         } catch (ArrayIndexOutOfBoundsException ignored){}
     }
 
-    public void promotePawn(int newRow, int newCol, Chessboard chessboard)
+    public void promotePawn(Move move, Chessboard chessboard, boolean isFinal)
     {
-        List<Image> promotionImages = Helper.getPromotionImages(isWhite);
-        int[] initialSquareLocation = Helper.convertSquareToInts(piecePosition);
+        Engine engine = chessApplication.getEngine();
 
-        int row = 0;
-        GridPane promotionPane = new GridPane();
-        promotionPane.setStyle("-fx-background-color: lightgray;");
-        promotionPane.setVgap(15);
-        for (Image promotionImage : promotionImages){
-            ImageView imageView = new ImageView(promotionImage);
-            imageView.setOnMouseClicked(e -> {
-                Image chosenImage = imageView.getImage();
-                if (chosenImage.equals(promotionImages.get(0))) {
-                    Piece promotedPawn = new Queen(isWhite, "queen", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
-                } else if (chosenImage.equals(promotionImages.get(1))){
-                    Piece promotedPawn = new Bishop(isWhite, "bishop", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
-                } else if (chosenImage.equals(promotionImages.get(2))){
-                    Piece promotedPawn = new Rook(isWhite, "rook", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
-                } else if (chosenImage.equals(promotionImages.get(3))){
-                    Piece promotedPawn = new Knight(isWhite, "knight", newRow, newCol);
-                    chessboard.addPieceToTheBoard(promotedPawn, newRow, newCol);
-                    chessboard.generateMove(promotedPawn, newRow, newCol, initialSquareLocation[0], initialSquareLocation[1]);
-                }
-                chessboard.getChildren().remove(promotionPane);
-            });
-            promotionPane.add(imageView, 0, row);
-            GridPane.setHalignment(imageView, HPos.CENTER);
-            GridPane.setValignment(imageView, VPos.CENTER);
-            row++;
+        int newRow = Helper.convertSquareToInts(move.targetSquare)[0];
+        int newCol = Helper.convertSquareToInts(move.targetSquare)[1];
+
+        if (engine.isMyTurn() || !isFinal) {
+            move.piece = new Queen(isWhite, "queen", newRow, newCol);
+            move.wasPromoting = true;
+            move.pawnBeforePromotion = this;
+            chessboard.makeMove(move, isFinal);
+        } else {
+            List<Image> promotionImages = Helper.getPromotionImages(isWhite);
+
+            int row = 0;
+            GridPane promotionPane = new GridPane();
+            promotionPane.setStyle("-fx-background-color: lightgray;");
+            promotionPane.setVgap(15);
+            for (Image promotionImage : promotionImages) {
+                ImageView imageView = new ImageView(promotionImage);
+                imageView.setOnMouseClicked(e -> {
+                    Image chosenImage = imageView.getImage();
+                    if (chosenImage.equals(promotionImages.get(0))) {
+                        move.piece = new Queen(isWhite, "queen", newRow, newCol);
+                    } else if (chosenImage.equals(promotionImages.get(1))) {
+                        move.piece = new Bishop(isWhite, "bishop", newRow, newCol);
+                    } else if (chosenImage.equals(promotionImages.get(2))) {
+                        move.piece = new Rook(isWhite, "rook", newRow, newCol);
+                    } else if (chosenImage.equals(promotionImages.get(3))) {
+                        move.piece = new Knight(isWhite, "knight", newRow, newCol);
+                    }
+                    chessboard.getChildren().remove(promotionPane);
+                    move.wasPromoting = true;
+                    move.pawnBeforePromotion = this;
+                    chessboard.makeMove(move, true);
+                });
+                promotionPane.add(imageView, 0, row);
+                GridPane.setHalignment(imageView, HPos.CENTER);
+                GridPane.setValignment(imageView, VPos.CENTER);
+                row++;
+            }
+            chessboard.add(promotionPane, newCol, isWhite ? newRow : newRow - 3, 1, 4);
         }
-        chessboard.add(promotionPane, newCol, isWhite ? newRow : newRow - 3, 1, 4);
     }
 }

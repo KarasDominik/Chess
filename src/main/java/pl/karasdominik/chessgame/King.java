@@ -12,10 +12,13 @@ public class King extends Piece {
     }
 
     @Override
-    public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
+    public void getPossibleMoves(Chessboard chessboard) {
 
         availableMoves.clear();
         squaresAttacked.clear();
+
+        int currentRow = Helper.convertSquareToInts(piecePosition)[0];
+        int currentCol = Helper.convertSquareToInts(piecePosition)[1];
 
         // Check move upwards
         int row = currentRow - 1;

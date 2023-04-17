@@ -6,6 +6,8 @@ public class Move {
     protected Piece capturedPiece;
     protected String initialSquare;
     protected String targetSquare;
+    protected boolean wasPromoting;
+    protected Piece pawnBeforePromotion;
 
     public Move(Piece piece, String initialSquare, String targetSquare) {
         this.piece = piece;
@@ -13,8 +15,14 @@ public class Move {
         this.targetSquare = targetSquare;
     }
 
-    public Move(Piece piece, Piece capturedPiece, String initialSquare, String targetSquare) {
+    public Move(Piece piece, String initialSquare, String targetSquare, boolean wasPromoting, Piece pawnBeforePromotion) {
         this(piece, initialSquare, targetSquare);
-        this.capturedPiece = capturedPiece;
+        this.pawnBeforePromotion = pawnBeforePromotion;
+        this.wasPromoting = wasPromoting;
+    }
+
+    @Override
+    public String toString() {
+        return piece.getClass().getSimpleName() + " " + targetSquare;
     }
 }

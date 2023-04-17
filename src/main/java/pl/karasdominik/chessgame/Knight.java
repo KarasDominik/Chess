@@ -4,12 +4,16 @@ public class Knight extends Piece {
 
     public Knight(boolean isWhite, String type, int row, int col){
         super(isWhite, type, row, col);
+        this.value = 3;
     }
 
     @Override
-    public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
+    public void getPossibleMoves(Chessboard chessboard) {
 
         availableMoves.clear();
+
+        int currentRow = Helper.convertSquareToInts(piecePosition)[0];
+        int currentCol = Helper.convertSquareToInts(piecePosition)[1];
 
         // Check upper left
         try {

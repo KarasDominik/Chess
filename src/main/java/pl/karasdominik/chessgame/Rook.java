@@ -4,5 +4,6 @@ public class Rook extends SlidingPiece {
 
     public Rook(boolean isWhite, String type, int row, int col) {
         super(isWhite, type, row, col);
+        this.value = 5;
     }
 }
