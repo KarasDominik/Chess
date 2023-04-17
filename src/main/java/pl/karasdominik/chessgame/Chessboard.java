@@ -23,14 +23,12 @@ public class Chessboard extends GridPane {
     protected Piece[][] piecesOnBoard = new Piece[8][8];
     protected List<Move> moves = new ArrayList<>();
     protected List<Circle> circles = new ArrayList<>();
-    protected List<Piece> piecesLeft = new ArrayList<>();
     protected List<Piece> whitePiecesLeft = new ArrayList<>();
     protected List<Piece> blackPiecesLeft = new ArrayList<>();
 
+    protected List<Move> possibleMoves = new ArrayList<>();
     protected List<String> squaresAttackedByWhite = new ArrayList<>();
     protected List<String> squaresAttackedByBlack = new ArrayList<>();
-    protected List<Move> possibleMovesForWhite = new ArrayList<>();
-    protected List<Move> possibleMovesForBlack = new ArrayList<>();
     protected King whiteKing;
     protected King blackKing;
 
@@ -67,67 +65,175 @@ public class Chessboard extends GridPane {
             }
         }
         addStartingPieces();
-        updatePossibleMovesForEachPiece();
     }
 
-    public void generateMove(Piece piece, int newRow, int newCol, int oldRow, int oldCol){
+    private void updateChessboardGraphically(boolean wasCastling){
+        Move move = moves.get(moves.size() - 1);
+        Piece piece = move.piece;
+        Piece capturedPiece = move.capturedPiece;
+        System.out.println(capturedPiece);
+        if(piece.equals(capturedPiece)){
+            System.out.println("Moves available: " + move.piece.availableMoves);
+            System.out.println("Not working :((");
+            System.out.println("Move: " + move);
+        }
+
+        int newRow = Helper.convertSquareToInts(move.targetSquare)[0];
+        int newCol = Helper.convertSquareToInts(move.targetSquare)[1];
+
+        if(move.wasPromoting){
+            getChildren().remove(move.pawnBeforePromotion);
+            GridPane.setHalignment(piece, HPos.CENTER);
+            GridPane.setValignment(piece, VPos.CENTER);
+        }
         ObservableList<Node> nodes = getChildren();
-        Engine engine = chessApplication.getEngine();
-        for (Node node : nodes){
-            if (node instanceof Piece && GridPane.getRowIndex(node) == newRow && GridPane.getColumnIndex(node) == newCol){
+        for (Node node : nodes) {
+            if (node instanceof Piece && node.equals(capturedPiece)) {
                 getChildren().remove(node);
                 break;
             }
         }
 
-        getChildren().remove(piece);
-        // Check if it was a passant capture
-        if (piece instanceof Pawn && piecesOnBoard[newRow][newCol] == null && newCol != oldCol)
-        {
-            Piece pawnToRemove = piecesOnBoard[oldRow][newCol];
-            getChildren().remove(pawnToRemove);
-        }
+        getChildren().remove(move.piece);
 
-        // Check if it was castling
-        if (piece instanceof King && Math.abs(oldCol - newCol) == 2){
-            int rookColumn;
-            int movedRookColumn;
-            if (newCol > oldCol) {
-                rookColumn = newCol + 1;
-                movedRookColumn = newCol - 1;
-            } else {
-                rookColumn = newCol - 2;
-                movedRookColumn = newCol + 1;
-            }
-            Piece rookToMove = piecesOnBoard[newRow][rookColumn];
+        if(wasCastling){
+            int initialColumn = Helper.convertSquareToInts(move.initialSquare)[1];
+            int targetColumn = Helper.convertSquareToInts(move.targetSquare)[1];
+
+            int newRookColumn;
+            if(targetColumn > initialColumn) newRookColumn = targetColumn - 1;
+            else newRookColumn = targetColumn + 1;
+            Piece rookToMove = piecesOnBoard[newRow][newRookColumn];
             getChildren().remove(rookToMove);
-            add(rookToMove, movedRookColumn, newRow);
-            piecesOnBoard[newRow][rookColumn] = null;
-            piecesOnBoard[newRow][movedRookColumn] = rookToMove;
-            rookToMove.piecePosition = Helper.convertSquareToString(newRow, movedRookColumn);
+            add(rookToMove, newRookColumn, newRow);
         }
 
-        // Pawn promotion
-        if (piece instanceof Pawn && ((piece.isWhite && newRow == 0) || (!piece.isWhite && newRow == 7))){
-            ((Pawn) piece).promotePawn(newRow, newCol, this);
+        add(piece, newCol, newRow);
+        removeCircles();
+    }
+
+    public void makeMove(Move move, boolean isFinal){
+        Piece piece = move.piece;
+        boolean wasCastling = false;
+
+        int initialSquareRow = Helper.convertSquareToInts(move.initialSquare)[0];
+        int initialSquareColumn = Helper.convertSquareToInts(move.initialSquare)[1];
+
+        int targetSquareRow = Helper.convertSquareToInts(move.targetSquare)[0];
+        int targetSquareColumn = Helper.convertSquareToInts(move.targetSquare)[1];
+
+        // Handle pawn promotion
+        if(piece instanceof Pawn && (targetSquareRow == 0 || targetSquareRow == 7)){
+            ((Pawn) piece).promotePawn(move, this, isFinal);
             return;
         }
-        else {
-            add(piece, newCol, newRow);
+
+        // Handle castling
+        if(piece instanceof King && Math.abs(initialSquareColumn - targetSquareColumn) == 2){
+            wasCastling = true;
+            int oldRookColumn;
+            int newRookColumn;
+            if(targetSquareColumn > initialSquareColumn){
+                // Castling kingside
+                oldRookColumn = targetSquareColumn + 1;
+                newRookColumn = targetSquareColumn - 1;
+            } else {
+                // Castling queenside
+                oldRookColumn = targetSquareColumn - 2;
+                newRookColumn = targetSquareColumn + 1;
+            }
+            Piece rookToMove = piecesOnBoard[targetSquareRow][oldRookColumn];
+            piecesOnBoard[targetSquareRow][oldRookColumn] = null;
+            piecesOnBoard[targetSquareRow][newRookColumn] = rookToMove;
+            rookToMove.piecePosition = Helper.convertSquareToString(targetSquareRow, newRookColumn);
+        }
+        // Handle en passant
+        else if(piece instanceof Pawn && piecesOnBoard[targetSquareRow][targetSquareColumn] == null && initialSquareColumn != targetSquareColumn){
+            move.capturedPiece = piecesOnBoard[initialSquareRow][targetSquareColumn];
+            piecesOnBoard[initialSquareRow][targetSquareColumn] = null;
+        } else {
+            move.capturedPiece = piecesOnBoard[targetSquareRow][targetSquareColumn];
         }
 
-        piecesOnBoard[newRow][newCol] = piece;
-        piecesOnBoard[oldRow][oldCol] = null;
-        String initialSquare = piece.piecePosition;
-        String targetSquare = Helper.convertSquareToString(newRow, newCol);
-        moves.add(new Move(piece, initialSquare, targetSquare));
-        piece.piecePosition = targetSquare;
-        removeCircles();
-        updatePossibleMovesForEachPiece();
-        updatePossibleMovesForBlackAndWhite();
-        if (checkForEndings()) return;
-        if (engine.isMyTurn() && !checkForEndings()){
-            engine.makeMove();
+        piecesOnBoard[targetSquareRow][targetSquareColumn] = piece;
+        piecesOnBoard[initialSquareRow][initialSquareColumn] = null;
+        piece.piecePosition = Helper.convertSquareToString(targetSquareRow, targetSquareColumn);
+
+        if (piece.isWhite) {
+            updateBlackPiecesLeft();
+            updateSquaresAttackedByBlack();
+        } else {
+            updateWhitePiecesLeft();
+            updateSquaresAttackedByWhite();
+        }
+
+        moves.add(move);
+
+        if(isFinal){
+            piece.isFirstMove = false;
+            Engine engine = chessApplication.getEngine();
+            printChessboard();
+            updateChessboardGraphically(wasCastling);
+            possibleMoves = moveGenerator();
+            if(isGameOver()) return;
+            if(engine.isMyTurn()) engine.makeMove();
+        }
+    }
+
+    public void unmakeMove(){
+        Move moveToUnmake = moves.remove(moves.size() - 1);
+
+        Piece capturedPiece = moveToUnmake.capturedPiece;
+        Piece piece = moveToUnmake.piece;
+
+        int initialSquareRow = Helper.convertSquareToInts(moveToUnmake.initialSquare)[0];
+        int initialSquareColumn = Helper.convertSquareToInts(moveToUnmake.initialSquare)[1];
+
+        int targetSquareRow = Helper.convertSquareToInts(moveToUnmake.targetSquare)[0];
+        int targetSquareColumn = Helper.convertSquareToInts(moveToUnmake.targetSquare)[1];
+
+        // Handle pawn promotion
+        if(moveToUnmake.wasPromoting){
+//            piece = new Pawn(piece.isWhite, "pawn", targetSquareRow, targetSquareColumn);
+            piece = moveToUnmake.pawnBeforePromotion;
+        }
+
+        // Handle castling
+        if(piece instanceof King && Math.abs(initialSquareColumn - targetSquareColumn) == 2){
+            int oldRookColumn;
+            int newRookColumn;
+            if(targetSquareColumn > initialSquareColumn){
+                // Castling kingside
+                newRookColumn = targetSquareColumn + 1;
+                oldRookColumn = targetSquareColumn - 1;
+            } else {
+                // Castling queenside
+                newRookColumn = targetSquareColumn - 2;
+                oldRookColumn = targetSquareColumn + 1;
+            }
+            Piece rookToMove = piecesOnBoard[targetSquareRow][oldRookColumn];
+            piecesOnBoard[targetSquareRow][oldRookColumn] = null;
+            piecesOnBoard[targetSquareRow][newRookColumn] = rookToMove;
+            rookToMove.piecePosition = Helper.convertSquareToString(targetSquareRow, newRookColumn);
+        }
+
+        // Handle en passant
+        if(piece instanceof Pawn && capturedPiece != null && !moveToUnmake.targetSquare.equals(capturedPiece.piecePosition)){
+            piecesOnBoard[initialSquareRow][targetSquareColumn] = capturedPiece;
+            piecesOnBoard[targetSquareRow][targetSquareColumn] = null;
+        } else {
+            piecesOnBoard[targetSquareRow][targetSquareColumn] = capturedPiece;
+        }
+
+        piecesOnBoard[initialSquareRow][initialSquareColumn] = piece;
+        piece.piecePosition = Helper.convertSquareToString(initialSquareRow, initialSquareColumn);
+
+        if (piece.isWhite) {
+            updateBlackPiecesLeft();
+            updateSquaresAttackedByBlack();
+        } else {
+            updateWhitePiecesLeft();
+            updateSquaresAttackedByWhite();
         }
     }
 
@@ -157,13 +263,8 @@ public class Chessboard extends GridPane {
                 } else {
                     piece = new Pawn(isWhite, "pawn", row, column);
                 }
-                add(piece, column, row);
-                if (isWhite) whitePiecesLeft.add(piece);
-                else blackPiecesLeft.add(piece);
-                piecesLeft.add(piece);
-                piecesOnBoard[row][column] = piece;
-                GridPane.setHalignment(piece, HPos.CENTER);
-                GridPane.setValignment(piece, VPos.CENTER);
+                if(piece.isWhite) piece.getPossibleMoves(this);
+                addPieceToTheBoard(piece, row, column);
             }
         }
     }
@@ -175,18 +276,10 @@ public class Chessboard extends GridPane {
         GridPane.setValignment(piece, VPos.CENTER);
     }
 
-    public void updatePossibleMoves() {
-        for (Piece piece : piecesLeft) {
-            int pieceRow = Helper.convertSquareToInts(piece.piecePosition)[0];
-            int pieceColumn = Helper.convertSquareToInts(piece.piecePosition)[1];
-            piece.getPossibleMoves(pieceRow, pieceColumn, this);
-        }
-    }
-
     public void updateSquaresAttackedByWhite() {
         squaresAttackedByWhite.clear();
         for (Piece piece : whitePiecesLeft) {
-            piece.getPossibleMoves(Helper.convertSquareToInts(piece.piecePosition)[0], Helper.convertSquareToInts(piece.piecePosition)[1], this);
+            piece.getPossibleMoves(this);
             if (piece instanceof Pawn) {
                 squaresAttackedByWhite.addAll(((Pawn) piece).squaresAttacked);
             } else if (piece instanceof King) {
@@ -200,96 +293,13 @@ public class Chessboard extends GridPane {
     public void updateSquaresAttackedByBlack() {
         squaresAttackedByBlack.clear();
         for (Piece piece : blackPiecesLeft) {
-            piece.getPossibleMoves(Helper.convertSquareToInts(piece.piecePosition)[0], Helper.convertSquareToInts(piece.piecePosition)[1], this);
+            piece.getPossibleMoves(this);
             if (piece instanceof Pawn) {
                 squaresAttackedByBlack.addAll(((Pawn) piece).squaresAttacked);
             } else if (piece instanceof King) {
                 squaresAttackedByBlack.addAll(((King) piece).squaresAttacked);
             } else {
                 squaresAttackedByBlack.addAll(piece.getAvailableMoves());
-            }
-        }
-    }
-
-    public void updatePossibleMovesForEachPiece() {
-        updatePiecesLeft();
-        updatePossibleMoves();
-        updateSquaresAttackedByBlack();
-        updateSquaresAttackedByWhite();
-
-        // Simulate every move to check if king will be safe afterwards
-        if (moves.size() % 2 == 0) {
-            for (Piece piece : whitePiecesLeft) {
-                simulateEveryMovePiece(piece, piece.isWhite);
-            }
-        } else {
-            for (Piece piece : blackPiecesLeft) {
-                simulateEveryMovePiece(piece, piece.isWhite);
-            }
-        }
-    }
-
-    public void simulateEveryMovePiece(Piece piece, boolean isWhite) {
-        List<String> movesToRemove = new ArrayList<>();
-        King kingToCheck = isWhite ? whiteKing : blackKing;
-        for (String possibleMove : piece.availableMoves) {
-
-            // Simulate move
-            int initialSquareRow = Helper.convertSquareToInts(piece.piecePosition)[0];
-            int initialSquareColumn = Helper.convertSquareToInts(piece.piecePosition)[1];
-
-            int targetSquareRow = Helper.convertSquareToInts(possibleMove)[0];
-            int targetSquareColumn = Helper.convertSquareToInts(possibleMove)[1];
-
-            Piece tempPiece = piecesOnBoard[targetSquareRow][targetSquareColumn];
-            piecesOnBoard[targetSquareRow][targetSquareColumn] = piece;
-            piecesOnBoard[initialSquareRow][initialSquareColumn] = null;
-            piece.piecePosition = Helper.convertSquareToString(targetSquareRow, targetSquareColumn);
-
-            if (isWhite) {
-                updateBlackPiecesLeft();
-                updateSquaresAttackedByBlack();
-            } else {
-                updateWhitePiecesLeft();
-                updateSquaresAttackedByWhite();
-            }
-
-
-            if (kingToCheck.isInCheck(this)) {
-                movesToRemove.add(possibleMove);
-            }
-
-            piecesOnBoard[initialSquareRow][initialSquareColumn] = piece;
-            piecesOnBoard[targetSquareRow][targetSquareColumn] = tempPiece;
-            piece.piecePosition = Helper.convertSquareToString(initialSquareRow, initialSquareColumn);
-
-            if (isWhite) {
-                updateBlackPiecesLeft();
-                updateSquaresAttackedByBlack();
-            } else {
-                updateWhitePiecesLeft();
-                updateSquaresAttackedByWhite();
-            }
-        }
-        piece.availableMoves.removeAll(movesToRemove);
-    }
-
-    public void updatePiecesLeft() {
-        piecesLeft.clear();
-        whitePiecesLeft.clear();
-        blackPiecesLeft.clear();
-        for (int row = 0; row < SIZE; row++) {
-            for (int column = 0; column < SIZE; column++) {
-                Piece piece = piecesOnBoard[row][column];
-                if (piece != null) {
-                    piecesLeft.add(piece);
-                    if (piece.isWhite){
-                        whitePiecesLeft.add(piece);
-                    }
-                    else {
-                        blackPiecesLeft.add(piece);
-                    }
-                }
             }
         }
     }
@@ -325,32 +335,122 @@ public class Chessboard extends GridPane {
         circles.clear();
     }
 
-    private void updatePossibleMovesForBlackAndWhite(){
-        possibleMovesForWhite.clear();
-        possibleMovesForBlack.clear();
-        for (Piece piece : piecesLeft) {
-            List<Move> listToUpdate = piece.isWhite ? possibleMovesForWhite : possibleMovesForBlack;
-            for (String pieceMove : piece.availableMoves) {
-                listToUpdate.add(new Move(piece, piece.piecePosition, pieceMove));
+    private boolean isGameOver(){
+        if(possibleMoves.size() == 0){
+            if(blackKing.isInCheck(this)){
+                System.out.println("Checkmate, white wins");
             }
+            else if(whiteKing.isInCheck(this)){
+                System.out.println("Checkmate, black wins");
+            } else {
+                System.out.println("Stalemate");
+            }
+            return true;
         }
+        if(blackPiecesLeft.size() == 1 && whitePiecesLeft.size() == 1) {
+            System.out.println("Draw");
+            return true;
+        }
+        return false;
     }
 
-    private boolean checkForEndings(){
-        boolean isEnd = false;
-        if (blackKing.isInCheck(this) && possibleMovesForBlack.size() == 0) {
-            System.out.println("Checkmate, white wins");
-            isEnd =  true;
-        } else if (whiteKing.isInCheck(this) && possibleMovesForWhite.size() == 0) {
-            System.out.println("Checkmate, black wins");
-            isEnd =  true;
-        } else if (blackPiecesLeft.size() == 1 && whitePiecesLeft.size() == 1) {
-            System.out.println("Draw");
-            isEnd =  true;
-        } else if (possibleMovesForWhite.size() == 0 || possibleMovesForBlack.size() == 0) {
-            System.out.println("Stalemate");
-            isEnd =  true;
+    public int countMaterial(boolean isWhite){
+        int material = 0;
+        List<Piece> piecesToCount = isWhite ? whitePiecesLeft : blackPiecesLeft;
+        for (Piece piece : piecesToCount){
+            material += piece.value;
         }
-        return isEnd;
+        return material;
+    }
+
+    public int evaluate(){
+        int whiteEvaluation = countMaterial(true);
+        int blackEvaluation = countMaterial(false);
+
+        return whiteEvaluation - blackEvaluation;
+    }
+
+    public int Search(int depth, boolean isMaximizing, int alpha, int beta){
+        if (depth == 0) return evaluate();
+
+        List<Move> availableMoves = moveGenerator();
+        King kingToCheck = whiteToMove() ? whiteKing : blackKing;
+
+        if(availableMoves.size() == 0){
+            if (kingToCheck.isInCheck(this)){
+                return Integer.MIN_VALUE;
+            }
+            return 0;
+        }
+
+        int bestValue;
+        if (isMaximizing){
+            bestValue = Integer.MIN_VALUE;
+            for(Move move : availableMoves){
+                makeMove(move, false);
+                int value = Search(depth - 1, false, alpha, beta);
+                unmakeMove();
+                bestValue = Math.max(bestValue, value);
+                alpha = Math.max(alpha, bestValue);
+                if (beta <= alpha) {
+                    break; // beta cut-off
+                }
+            }
+        } else {
+            bestValue = Integer.MAX_VALUE;
+            for(Move move : availableMoves){
+                makeMove(move, false);
+                int value = Search(depth - 1, true, alpha, beta);
+                unmakeMove();
+                bestValue = Math.min(bestValue, value);
+                beta = Math.min(beta, bestValue);
+                if (beta <= alpha) {
+                    break; // alpha cut-off
+                }
+            }
+        }
+        return bestValue;
+    }
+
+    public boolean whiteToMove(){
+        return moves.size() % 2 == 0;
+    }
+
+    public List<Move> moveGenerator(){
+        List<Move> possibleMoves = new ArrayList<>();
+        for (int row = 0; row < SIZE; row++){
+            for (int col = 0; col < SIZE; col++){
+                Piece piece = piecesOnBoard[row][col];
+                if(piece != null){
+                    if(whiteToMove() && piece.isWhite || !whiteToMove() && !piece.isWhite){
+                        piece.getPossibleMoves(this);
+                        King kingToProtect = piece.isWhite ? whiteKing : blackKing;
+                        List<String> movesToRemove = new ArrayList<>();
+                        for (String availableMove : piece.availableMoves){
+                            Move move = new Move(piece, piece.piecePosition, availableMove);
+                            makeMove(move, false);
+                            if(kingToProtect.isInCheck(this)) {
+                                movesToRemove.add(availableMove);
+                            } else {
+                                possibleMoves.add(move);
+                            }
+                            unmakeMove();
+                        }
+                        piece.availableMoves.removeAll(movesToRemove);
+                    }
+                }
+            }
+        }
+        return possibleMoves;
+    }
+
+    private void printChessboard(){
+        for (int row = 0; row < SIZE; row++){
+            for (int col = 0; col < SIZE; col++) {
+                System.out.printf("%10s", piecesOnBoard[row][col]);
+                if(col==7) System.out.println();
+            }
+        }
+        System.out.println("=======================================================================");
     }
 }

@@ -18,6 +18,7 @@ public abstract class Piece extends ImageView {
     protected final Color color;
     protected String piecePosition;
     protected boolean isFirstMove;
+    protected int value;
 
     protected List<String> availableMoves;
 
@@ -46,14 +47,13 @@ public abstract class Piece extends ImageView {
         // Enable mouse dragging for each piece
         setOnMousePressed((MouseEvent event) -> {
             Chessboard chessboard = chessApplication.getChessboard();
-            GridPane grid = (GridPane) getParent();
 
             // Remove any existing circles from the chessboard
             chessboard.removeCircles();
 
             // Display possible moves
             if (chessboard.moves.size() % 2 == 0 && this.isWhite || chessboard.moves.size() % 2 != 0 && !this.isWhite) {
-                displayPossibleMoves(grid, chessboard);
+                displayPossibleMoves(chessboard);
             }
 
             mouseX = event.getSceneX();
@@ -62,8 +62,8 @@ public abstract class Piece extends ImageView {
             oldRow = GridPane.getRowIndex(this);
             oldCol = GridPane.getColumnIndex(this);
 
-            grid.getChildren().remove(this);
-            grid.add(this, oldCol, oldRow);
+            chessboard.getChildren().remove(this);
+            chessboard.add(this, oldCol, oldRow);
         });
 
         setOnMouseDragged((MouseEvent event) -> {
@@ -76,17 +76,19 @@ public abstract class Piece extends ImageView {
 
         setOnMouseReleased((MouseEvent event) -> {
             Chessboard chessboard = chessApplication.getChessboard();
-            GridPane grid = (GridPane) getParent();
 
-            int newRow = (int) (event.getSceneY() / (grid.getHeight() / 8));
-            int newCol = (int) (event.getSceneX() / (grid.getWidth() / 8));
-            boolean rightTurn = isWhite && chessboard.moves.size() % 2 == 0 || !isWhite && chessboard.moves.size() % 2 != 0;
+            int newRow = (int) (event.getSceneY() / (chessboard.getHeight() / 8));
+            int newCol = (int) (event.getSceneX() / (chessboard.getWidth() / 8));
+            String targetSquare = Helper.convertSquareToString(newRow, newCol);
+
+            Move move = new Move(this, piecePosition, targetSquare);
+            boolean rightTurn = isWhite && chessboard.whiteToMove() || !isWhite && !chessboard.whiteToMove();
             if (rightTurn && canMoveTo(newRow, newCol)) {
-                chessboard.generateMove(this, newRow, newCol, oldRow, oldCol);
+                chessboard.makeMove(move, true);
             }
             else {
-                grid.getChildren().remove(this);
-                grid.add(this, oldCol, oldRow);
+                chessboard.getChildren().remove(this);
+                chessboard.add(this, oldCol, oldRow);
             }
 
             setTranslateX(0);
@@ -95,11 +97,10 @@ public abstract class Piece extends ImageView {
     }
 
     private boolean canMoveTo(int newRow, int newCol) {
-
         String targetSquare = Helper.convertSquareToString(newRow, newCol);
+
         for (String availableMove : availableMoves) {
             if (availableMove.equals(targetSquare)) {
-                isFirstMove = false;
                 return true;
             }
         }
@@ -110,18 +111,23 @@ public abstract class Piece extends ImageView {
         return availableMoves;
     }
 
-    private void displayPossibleMoves(GridPane grid, Chessboard chessboard){
+    private void displayPossibleMoves(Chessboard chessboard){
         for (String square : availableMoves) {
             Circle circle = new Circle(30);
             circle.setFill(Color.rgb(255, 255, 225));
             int circleRow = Helper.convertSquareToInts(square)[0];
             int circleCol = Helper.convertSquareToInts(square)[1];
-            grid.add(circle, circleCol, circleRow);
+            chessboard.add(circle, circleCol, circleRow);
             GridPane.setHalignment(circle, HPos.CENTER);
             GridPane.setValignment(circle, VPos.CENTER);
             chessboard.circles.add(circle);
         }
     }
 
-    public abstract void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard);
+    public abstract void getPossibleMoves(Chessboard chessboard);
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + (isWhite ? "w" : "b");
+    }
 }

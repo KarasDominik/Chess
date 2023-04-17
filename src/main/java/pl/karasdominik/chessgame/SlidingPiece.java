@@ -7,10 +7,11 @@ public abstract class SlidingPiece extends Piece {
     }
 
     @Override
-    public void getPossibleMoves(int currentRow, int currentCol, Chessboard chessboard) {
+    public void getPossibleMoves(Chessboard chessboard) {
 
         availableMoves.clear();
-
+        int currentRow = Helper.convertSquareToInts(piecePosition)[0];
+        int currentCol = Helper.convertSquareToInts(piecePosition)[1];
         if (this instanceof Rook || this instanceof Queen) {
 
             // Check moves upwards
