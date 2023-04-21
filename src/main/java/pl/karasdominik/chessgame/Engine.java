@@ -26,7 +26,7 @@ public class Engine {
     }
 
     private Move findTheBestMove(){
-        List<Move> movesAvailable = chessboard.moveGenerator();
+        List<Move> movesAvailable = chessboard.possibleMoves;
         Move theBestMove = null;
         double theBestEvaluation = Double.MAX_VALUE;
         for(Move move : movesAvailable){

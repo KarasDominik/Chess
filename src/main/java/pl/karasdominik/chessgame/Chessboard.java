@@ -141,6 +141,7 @@ public class Chessboard extends GridPane {
             piecesOnBoard[targetSquareRow][newRookColumn] = rookToMove;
             rookToMove.piecePosition = Helper.convertSquareToString(targetSquareRow, newRookColumn);
         }
+
         // Handle en passant
         else if(piece instanceof Pawn && piecesOnBoard[targetSquareRow][targetSquareColumn] == null && initialSquareColumn != targetSquareColumn){
             move.capturedPiece = piecesOnBoard[initialSquareRow][targetSquareColumn];
