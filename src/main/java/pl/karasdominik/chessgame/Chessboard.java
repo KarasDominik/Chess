@@ -371,8 +371,8 @@ public class Chessboard extends GridPane {
     }
 
     public double evaluate(){
-        double whiteEvaluation = countMaterial(true) + centerControl(true);
-        double blackEvaluation = countMaterial(false) + centerControl(false);
+        double whiteEvaluation = Math.round(countMaterial(true) + centerControl(true) + squaresAttackedByWhite.size() * 0.01);
+        double blackEvaluation = countMaterial(false) + centerControl(false) + squaresAttackedByBlack.size() * 0.01;
 
         return whiteEvaluation - blackEvaluation;
     }
