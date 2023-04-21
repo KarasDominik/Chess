@@ -15,12 +15,6 @@ public class Move {
         this.targetSquare = targetSquare;
     }
 
-    public Move(Piece piece, String initialSquare, String targetSquare, boolean wasPromoting, Piece pawnBeforePromotion) {
-        this(piece, initialSquare, targetSquare);
-        this.pawnBeforePromotion = pawnBeforePromotion;
-        this.wasPromoting = wasPromoting;
-    }
-
     @Override
     public String toString() {
         return piece.getClass().getSimpleName() + " " + targetSquare;

@@ -1,7 +1,6 @@
 package pl.karasdominik.chessgame;
 
 import java.util.List;
-import java.util.Random;
 
 public class Engine {
 
@@ -14,12 +13,12 @@ public class Engine {
 
     public void makeMove(){
         long startTime = System.currentTimeMillis();
-//        Move move = findTheBestMove();
+        Move move = findTheBestMove();
         long endTime = System.currentTimeMillis();
-        Random random = new Random();
-
-        Move move = chessboard.possibleMoves.get(random.nextInt(chessboard.possibleMoves.size()));
+        System.out.println("Finding the best move took: " + (endTime - startTime));
+        System.out.println("Evaluation before move: " + chessboard.evaluate());
         chessboard.makeMove(move, true);
+        System.out.println("Evaluation after move: " + chessboard.evaluate());
     }
 
     public boolean isMyTurn(){
@@ -29,10 +28,10 @@ public class Engine {
     private Move findTheBestMove(){
         List<Move> movesAvailable = chessboard.moveGenerator();
         Move theBestMove = null;
-        int theBestEvaluation = Integer.MAX_VALUE;
+        double theBestEvaluation = Double.MAX_VALUE;
         for(Move move : movesAvailable){
             chessboard.makeMove(move, false);
-            int evaluation = chessboard.Search(3, !playsWhite, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            double evaluation = chessboard.Search(3, !playsWhite, Double.MIN_VALUE, Double.MAX_VALUE);
             if (evaluation < theBestEvaluation){
                 theBestMove = move;
                 theBestEvaluation = evaluation;
