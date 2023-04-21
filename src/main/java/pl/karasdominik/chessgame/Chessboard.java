@@ -1,10 +1,8 @@
 package pl.karasdominik.chessgame;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -15,6 +13,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Chessboard extends GridPane {
@@ -71,12 +70,6 @@ public class Chessboard extends GridPane {
         Move move = moves.get(moves.size() - 1);
         Piece piece = move.piece;
         Piece capturedPiece = move.capturedPiece;
-        System.out.println(capturedPiece);
-        if(piece.equals(capturedPiece)){
-            System.out.println("Moves available: " + move.piece.availableMoves);
-            System.out.println("Not working :((");
-            System.out.println("Move: " + move);
-        }
 
         int newRow = Helper.convertSquareToInts(move.targetSquare)[0];
         int newCol = Helper.convertSquareToInts(move.targetSquare)[1];
@@ -86,14 +79,8 @@ public class Chessboard extends GridPane {
             GridPane.setHalignment(piece, HPos.CENTER);
             GridPane.setValignment(piece, VPos.CENTER);
         }
-        ObservableList<Node> nodes = getChildren();
-        for (Node node : nodes) {
-            if (node instanceof Piece && node.equals(capturedPiece)) {
-                getChildren().remove(node);
-                break;
-            }
-        }
 
+        getChildren().remove(capturedPiece);
         getChildren().remove(move.piece);
 
         if(wasCastling){
@@ -110,6 +97,7 @@ public class Chessboard extends GridPane {
 
         add(piece, newCol, newRow);
         removeCircles();
+        System.out.println("Circles removed!");
     }
 
     public void makeMove(Move move, boolean isFinal){
@@ -147,6 +135,7 @@ public class Chessboard extends GridPane {
             piecesOnBoard[targetSquareRow][newRookColumn] = rookToMove;
             rookToMove.piecePosition = Helper.convertSquareToString(targetSquareRow, newRookColumn);
         }
+
         // Handle en passant
         else if(piece instanceof Pawn && piecesOnBoard[targetSquareRow][targetSquareColumn] == null && initialSquareColumn != targetSquareColumn){
             move.capturedPiece = piecesOnBoard[initialSquareRow][targetSquareColumn];
@@ -168,14 +157,18 @@ public class Chessboard extends GridPane {
         }
 
         moves.add(move);
+        Engine engine = chessApplication.getEngine();
+        engine.positionsSearched++;
 
         if(isFinal){
             piece.isFirstMove = false;
-            Engine engine = chessApplication.getEngine();
-            printChessboard();
             updateChessboardGraphically(wasCastling);
+//            Engine engine = chessApplication.getEngine();
             possibleMoves = moveGenerator();
-            if(isGameOver()) return;
+            if(isGameOver()) {
+                System.out.println("Average time: " + engine.time.stream().mapToDouble(Long::doubleValue).average());
+                return;
+            }
             if(engine.isMyTurn()) engine.makeMove();
         }
     }
@@ -194,7 +187,6 @@ public class Chessboard extends GridPane {
 
         // Handle pawn promotion
         if(moveToUnmake.wasPromoting){
-//            piece = new Pawn(piece.isWhite, "pawn", targetSquareRow, targetSquareColumn);
             piece = moveToUnmake.pawnBeforePromotion;
         }
 
@@ -363,14 +355,28 @@ public class Chessboard extends GridPane {
         return material;
     }
 
-    public int evaluate(){
-        int whiteEvaluation = countMaterial(true);
-        int blackEvaluation = countMaterial(false);
+    private double centerControl(boolean isWhite){
+        double centerControl = 0;
+
+        for(int row = 3; row <= 4; row++){
+            for(int col = 2; col <= 5; col++){
+                Piece piece = piecesOnBoard[row][col];
+                if(piece != null && piece.isWhite == isWhite) {
+                    centerControl += 0.2;
+                }
+            }
+        }
+        return centerControl;
+    }
+
+    public double evaluate(){
+        double whiteEvaluation = countMaterial(true) + centerControl(true) + squaresAttackedByWhite.size() * 0.01;
+        double blackEvaluation = countMaterial(false) + centerControl(false) + squaresAttackedByBlack.size() * 0.01;
 
         return whiteEvaluation - blackEvaluation;
     }
 
-    public int Search(int depth, boolean isMaximizing, int alpha, int beta){
+    public double Search(int depth, boolean isMaximizing, Double alpha, Double beta){
         if (depth == 0) return evaluate();
 
         List<Move> availableMoves = moveGenerator();
@@ -383,12 +389,12 @@ public class Chessboard extends GridPane {
             return 0;
         }
 
-        int bestValue;
+        double bestValue;
         if (isMaximizing){
-            bestValue = Integer.MIN_VALUE;
+            bestValue = Double.MIN_VALUE;
             for(Move move : availableMoves){
                 makeMove(move, false);
-                int value = Search(depth - 1, false, alpha, beta);
+                double value = Search(depth - 1, false, alpha, beta);
                 unmakeMove();
                 bestValue = Math.max(bestValue, value);
                 alpha = Math.max(alpha, bestValue);
@@ -397,10 +403,10 @@ public class Chessboard extends GridPane {
                 }
             }
         } else {
-            bestValue = Integer.MAX_VALUE;
+            bestValue = Double.MAX_VALUE;
             for(Move move : availableMoves){
                 makeMove(move, false);
-                int value = Search(depth - 1, true, alpha, beta);
+                double value = Search(depth - 1, true, alpha, beta);
                 unmakeMove();
                 bestValue = Math.min(bestValue, value);
                 beta = Math.min(beta, bestValue);
@@ -410,6 +416,27 @@ public class Chessboard extends GridPane {
             }
         }
         return bestValue;
+    }
+
+    public void orderMoves(List<Move> movesToOrder){
+
+        for(Move move : movesToOrder) {
+
+            Piece movingPiece = move.piece;
+            Piece capturedPiece = move.capturedPiece;
+            move.moveValue = 0;
+
+            if (capturedPiece != null) {
+                move.moveValue = 10 * capturedPiece.value - movingPiece.value + 1;
+            }
+
+            List<String> squaresAttackedByEnemy = whiteToMove() ? squaresAttackedByBlack : squaresAttackedByWhite;
+
+            if(squaresAttackedByEnemy.contains(move.targetSquare)){
+                move.moveValue -= 1;
+            }
+        }
+        possibleMoves.sort(Comparator.<Move>comparingInt(m -> m.moveValue).reversed());
     }
 
     public boolean whiteToMove(){
@@ -441,16 +468,7 @@ public class Chessboard extends GridPane {
                 }
             }
         }
+        orderMoves(possibleMoves);
         return possibleMoves;
-    }
-
-    private void printChessboard(){
-        for (int row = 0; row < SIZE; row++){
-            for (int col = 0; col < SIZE; col++) {
-                System.out.printf("%10s", piecesOnBoard[row][col]);
-                if(col==7) System.out.println();
-            }
-        }
-        System.out.println("=======================================================================");
     }
 }

@@ -83,7 +83,7 @@ public abstract class Piece extends ImageView {
 
             Move move = new Move(this, piecePosition, targetSquare);
             boolean rightTurn = isWhite && chessboard.whiteToMove() || !isWhite && !chessboard.whiteToMove();
-            if (rightTurn && canMoveTo(newRow, newCol)) {
+            if (rightTurn && availableMoves.contains(targetSquare)) {
                 chessboard.makeMove(move, true);
             }
             else {
@@ -94,17 +94,6 @@ public abstract class Piece extends ImageView {
             setTranslateX(0);
             setTranslateY(0);
         });
-    }
-
-    private boolean canMoveTo(int newRow, int newCol) {
-        String targetSquare = Helper.convertSquareToString(newRow, newCol);
-
-        for (String availableMove : availableMoves) {
-            if (availableMove.equals(targetSquare)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public List<String> getAvailableMoves() {
@@ -125,9 +114,4 @@ public abstract class Piece extends ImageView {
     }
 
     public abstract void getPossibleMoves(Chessboard chessboard);
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + (isWhite ? "w" : "b");
-    }
 }
