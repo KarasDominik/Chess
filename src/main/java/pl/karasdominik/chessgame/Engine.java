@@ -5,7 +5,8 @@ import java.util.List;
 public class Engine {
 
     protected boolean playsWhite;
-    private Chessboard chessboard = chessApplication.getChessboard();
+    private final Chessboard chessboard = chessApplication.getChessboard();
+    public int positionsSearched;
 
     public Engine(boolean playsWhite){
         this.playsWhite = playsWhite;
@@ -26,6 +27,7 @@ public class Engine {
     }
 
     private Move findTheBestMove(){
+        positionsSearched = 0;
         List<Move> movesAvailable = chessboard.possibleMoves;
         Move theBestMove = null;
         double theBestEvaluation = Double.MAX_VALUE;
@@ -38,6 +40,7 @@ public class Engine {
             }
             chessboard.unmakeMove();
         }
+        System.out.println("Positions searched: " + positionsSearched);
         return theBestMove;
     }
 }

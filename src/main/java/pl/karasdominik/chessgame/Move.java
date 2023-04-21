@@ -14,9 +14,4 @@ public class Move {
         this.initialSquare = initialSquare;
         this.targetSquare = targetSquare;
     }
-
-    @Override
-    public String toString() {
-        return piece.getClass().getSimpleName() + " " + targetSquare;
-    }
 }

@@ -1,10 +1,8 @@
 package pl.karasdominik.chessgame;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -80,14 +78,8 @@ public class Chessboard extends GridPane {
             GridPane.setHalignment(piece, HPos.CENTER);
             GridPane.setValignment(piece, VPos.CENTER);
         }
-        ObservableList<Node> nodes = getChildren();
-        for (Node node : nodes) {
-            if (node instanceof Piece && node.equals(capturedPiece)) {
-                getChildren().remove(node);
-                break;
-            }
-        }
 
+        getChildren().remove(capturedPiece);
         getChildren().remove(move.piece);
 
         if(wasCastling){
@@ -163,11 +155,13 @@ public class Chessboard extends GridPane {
         }
 
         moves.add(move);
+        Engine engine = chessApplication.getEngine();
+        engine.positionsSearched++;
 
         if(isFinal){
             piece.isFirstMove = false;
             updateChessboardGraphically(wasCastling);
-            Engine engine = chessApplication.getEngine();
+//            Engine engine = chessApplication.getEngine();
             possibleMoves = moveGenerator();
             if(isGameOver()) return;
             if(engine.isMyTurn()) engine.makeMove();
@@ -371,8 +365,8 @@ public class Chessboard extends GridPane {
     }
 
     public double evaluate(){
-        double whiteEvaluation = Math.round(countMaterial(true) + centerControl(true) + squaresAttackedByWhite.size() * 0.01);
-        double blackEvaluation = countMaterial(false) + centerControl(false) + squaresAttackedByBlack.size() * 0.01;
+        double whiteEvaluation = countMaterial(true) + centerControl(true);
+        double blackEvaluation = countMaterial(false) + centerControl(false);
 
         return whiteEvaluation - blackEvaluation;
     }
@@ -450,14 +444,4 @@ public class Chessboard extends GridPane {
         }
         return possibleMoves;
     }
-
-//    private void printChessboard(){
-//        for (int row = 0; row < SIZE; row++){
-//            for (int col = 0; col < SIZE; col++) {
-//                System.out.printf("%10s", piecesOnBoard[row][col]);
-//                if(col==7) System.out.println();
-//            }
-//        }
-//        System.out.println("=======================================================================");
-//    }
 }
