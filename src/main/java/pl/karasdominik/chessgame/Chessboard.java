@@ -97,7 +97,6 @@ public class Chessboard extends GridPane {
 
         add(piece, newCol, newRow);
         removeCircles();
-        System.out.println("Circles removed!");
     }
 
     public void makeMove(Move move, boolean isFinal){
@@ -163,10 +162,8 @@ public class Chessboard extends GridPane {
         if(isFinal){
             piece.isFirstMove = false;
             updateChessboardGraphically(wasCastling);
-//            Engine engine = chessApplication.getEngine();
             possibleMoves = moveGenerator();
             if(isGameOver()) {
-                System.out.println("Average time: " + engine.time.stream().mapToDouble(Long::doubleValue).average());
                 return;
             }
             if(engine.isMyTurn()) engine.makeMove();
@@ -357,10 +354,12 @@ public class Chessboard extends GridPane {
 
     private double centerControl(boolean isWhite){
         double centerControl = 0;
-
+        List<String> squaresAttacked = isWhite ? squaresAttackedByWhite : squaresAttackedByBlack;
         for(int row = 3; row <= 4; row++){
             for(int col = 2; col <= 5; col++){
                 Piece piece = piecesOnBoard[row][col];
+                String square = Helper.convertSquareToString(row, col);
+                if(squaresAttacked.contains(square)) centerControl += 0.1;
                 if(piece != null && piece.isWhite == isWhite) {
                     centerControl += 0.2;
                 }
@@ -369,9 +368,24 @@ public class Chessboard extends GridPane {
         return centerControl;
     }
 
+    private double pieceActivity(boolean isWhite){
+        double pieceActivity = 0;
+        List<Piece> piecesToCheck = isWhite ? whitePiecesLeft : blackPiecesLeft;
+
+        for(Piece piece : piecesToCheck){
+            if(piece instanceof Knight && piece.isFirstMove) pieceActivity -= 0.8;
+            if(piece instanceof Bishop && piece.isFirstMove) pieceActivity -= 0.6;
+            if(piece instanceof Pawn && piece.isFirstMove) pieceActivity -= 0.2;
+            if(piece instanceof Queen && piece.isFirstMove) pieceActivity -= 0.1;
+            if(piece instanceof Rook && piece.isFirstMove) pieceActivity -= 0.1;
+        }
+
+        return pieceActivity;
+    }
+
     public double evaluate(){
-        double whiteEvaluation = countMaterial(true) + centerControl(true) + squaresAttackedByWhite.size() * 0.01;
-        double blackEvaluation = countMaterial(false) + centerControl(false) + squaresAttackedByBlack.size() * 0.01;
+        double whiteEvaluation = countMaterial(true) + centerControl(true) + squaresAttackedByWhite.size() * 0.01 + pieceActivity(true);
+        double blackEvaluation = countMaterial(false) + centerControl(false) + squaresAttackedByBlack.size() * 0.01 + pieceActivity(false);
 
         return whiteEvaluation - blackEvaluation;
     }

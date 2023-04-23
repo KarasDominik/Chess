@@ -15,7 +15,6 @@ public class Engine {
     }
 
     public void makeMove(){
-        System.out.println("Starting to search...");
         long startTime = System.currentTimeMillis();
         Move move = findTheBestMove();
         long endTime = System.currentTimeMillis();
@@ -31,13 +30,14 @@ public class Engine {
     }
 
     private Move findTheBestMove(){
+        int depth = 3;
         positionsSearched = 0;
         List<Move> movesAvailable = chessboard.moveGenerator();
         Move theBestMove = null;
         double theBestEvaluation = Double.MAX_VALUE;
         for(Move move : movesAvailable){
             chessboard.makeMove(move, false);
-            double evaluation = chessboard.Search(3, !playsWhite, Double.MIN_VALUE, Double.MAX_VALUE);
+            double evaluation = chessboard.Search(depth, !playsWhite, Double.MIN_VALUE, Double.MAX_VALUE);
             if (evaluation < theBestEvaluation){
                 theBestMove = move;
                 theBestEvaluation = evaluation;
